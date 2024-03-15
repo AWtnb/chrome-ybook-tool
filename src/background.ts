@@ -1,21 +1,31 @@
+/**
+ * 指定したサイトでのみポップアップを有効化する
+ * https://geniusium.hatenablog.com/entry/2023/05/04/082017
+ */
 'use strict';
+const TARGET = 'https://www.yuhikaku.co.jp/books/detail/';
 
-// With background scripts you can communicate with popup
-// and contentScript files.
-// For more information on background script,
-// See https://developer.chrome.com/extensions/background_pages
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'GREETINGS') {
-    const message: string = `Hi ${
-      sender.tab ? 'Con' : 'Pop'
-    }, my name is Bac. I am from Background. It's great to hear from you.`;
-
-    // Log message coming from the `request` parameter
-    console.log(request.payload.message);
-    // Send a response message
-    sendResponse({
-      message,
-    });
+const changePopup = (url: string | undefined) => {
+  if (!url) {
+    return;
   }
+  if (url.startsWith(TARGET)) {
+    chrome.action.setPopup({ popup: './popup.html' });
+  } else {
+    chrome.action.setPopup({ popup: '' });
+  }
+};
+
+chrome.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) => {
+  chrome.tabs.get(activeInfo.tabId, (tab: chrome.tabs.Tab) => {
+    changePopup(tab.url);
+  });
 });
+
+chrome.tabs.onUpdated.addListener(
+  (_: number, change: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
+    if (tab.active && change.url) {
+      changePopup(tab.url);
+    }
+  }
+);

@@ -1,112 +1,137 @@
 'use strict';
 
-import './popup.css';
-
-(function () {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
-
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: (cb: (count: number) => void) => {
-      chrome.storage.sync.get(['count'], (result) => {
-        cb(result.count);
-      });
-    },
-    set: (value: number, cb: () => void) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
-        }
-      );
-    },
-  };
-
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter')!.innerHTML = initialValue.toString();
-
-    document.getElementById('incrementBtn')!.addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
-    });
-
-    document.getElementById('decrementBtn')!.addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
-    });
-  }
-
-  function updateCounter({ type }: { type: string }) {
-    counterStorage.get((count: number) => {
-      let newCount: number;
-
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
-
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter')!.innerHTML = newCount.toString();
-
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id!,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            (response) => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
-        });
-      });
-    });
-  }
-
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get((count: number) => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', restoreCounter);
-
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    (response) => {
-      console.log(response.message);
+const requestToActiveTab = (info: string) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab.id) {
+      return;
     }
-  );
-})();
+    chrome.tabs.sendMessage(
+      tab.id,
+      {
+        askfor: info,
+      },
+      () => {}
+    );
+  });
+};
+
+requestToActiveTab('slack-slash-command');
+requestToActiveTab('x-post-content');
+requestToActiveTab('x-thread-content');
+requestToActiveTab('x-juhan-content');
+requestToActiveTab('meta-content');
+requestToActiveTab('threads-content');
+requestToActiveTab('genpon');
+requestToActiveTab('hasso');
+
+type copyFinishedCallback = () => void;
+
+const copyText = (text: string, callback: copyFinishedCallback) => {
+  navigator.clipboard.writeText(text).then(callback, () => {
+    console.log('failed to copy:', text);
+  });
+};
+
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.id === 'slack-slash-command') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.slashCmd, () => {
+        const url = 'https://digi-yuhi.slack.com/archives/C03HZP034P5';
+        window.open(url, '_blank');
+      });
+    });
+    return;
+  }
+  if (request.id === 'x-post-content') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      window.open(request.payload.intentUrl, '_blank');
+    });
+    return;
+  }
+  if (request.id === 'x-thread-content') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.twtContent, () => {
+        const url =
+          'https://twitter.com/search?q=from%3Ayuhikaku_nibu&src=typed_query&f=live';
+        window.open(url, '_blank');
+      });
+    });
+    return;
+  }
+  if (request.id === 'x-juhan-content') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      window.open(request.payload.intentUrl, '_blank');
+    });
+    return;
+  }
+  if (request.id === 'meta-content') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.content, () => {
+        const url =
+          'https://business.facebook.com/latest/composer?ref=biz_web_content_manager_published_posts&asset_id=101509805373062&context_ref=POSTS&business_id=114292853233117';
+        window.open(url, '_blank');
+      });
+    });
+    return;
+  }
+  if (request.id === 'threads-content') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.content, () => {
+        const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
+          request.payload.content
+        )}`;
+        window.open(url, '_blank');
+      });
+    });
+    return;
+  }
+  if (request.id === 'genpon') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.content, () => {
+        button?.classList.add('finished');
+      });
+    });
+    return;
+  }
+  if (request.id === 'hasso') {
+    const button = document.getElementById(request.id);
+    if (request.payload.enabled) {
+      button?.removeAttribute('disabled');
+    }
+    button!.addEventListener('click', () => {
+      copyText(request.payload.content, () => {
+        button?.classList.add('finished');
+      });
+    });
+    return;
+  }
+});
