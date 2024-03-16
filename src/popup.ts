@@ -27,7 +27,16 @@ requestToActiveTab('hasso');
 
 type copyFinishedCallback = () => void;
 
+const clearCopyStatus = () => {
+  Array.from(
+    document.querySelectorAll<HTMLElement>('button.with-copy')
+  ).forEach((elem) => {
+    elem.classList.remove('finished');
+  });
+};
+
 const copyText = (text: string, callback: copyFinishedCallback) => {
+  clearCopyStatus();
   navigator.clipboard.writeText(text).then(callback, () => {
     console.log('failed to copy:', text);
   });
@@ -112,9 +121,6 @@ chrome.runtime.onMessage.addListener((request) => {
   }
   if (request.id === 'genpon') {
     const button = document.getElementById(request.id);
-    if (request.payload.enabled) {
-      button?.removeAttribute('disabled');
-    }
     button!.addEventListener('click', () => {
       copyText(request.payload.content, () => {
         button?.classList.add('finished');
@@ -124,9 +130,6 @@ chrome.runtime.onMessage.addListener((request) => {
   }
   if (request.id === 'hasso') {
     const button = document.getElementById(request.id);
-    if (request.payload.enabled) {
-      button?.removeAttribute('disabled');
-    }
     button!.addEventListener('click', () => {
       copyText(request.payload.content, () => {
         button?.classList.add('finished');
