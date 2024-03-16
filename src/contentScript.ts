@@ -71,9 +71,12 @@ const getGenres = (): string[] => {
     document.querySelectorAll<HTMLElement>('.txt12 h2 > a')
   );
   elems.forEach((elem) => {
-    elem.innerText.split('・').map(s => s.trim().replace(/（.+?）/g,"")).forEach((s) => {
-      ss.push(s);
-    });
+    elem.innerText
+      .split('・')
+      .map((s) => s.trim().replace(/（.+?）/g, ''))
+      .forEach((s) => {
+        ss.push(s);
+      });
   });
   return ss;
 };

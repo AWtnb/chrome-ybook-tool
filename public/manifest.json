@@ -16,20 +16,25 @@
     "default_title": "Chrome Ybook Tool",
     "default_popup": "popup.html"
   },
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "clipboardWrite"
-  ],
+  "permissions": ["activeTab", "tabs", "clipboardWrite"],
+
+  "commands": {
+    "_execute_action": {
+      "description": "open popup",
+      "suggested_key": {
+        "default": "Ctrl+Y",
+        "mac": "Ctrl+Y",
+        "windows": "Ctrl+Y",
+        "linux": "Ctrl+Y"
+      }
+    }
+  },
+
   "content_scripts": [
     {
-      "matches": [
-        "https://www.yuhikaku.co.jp/books/detail/*"
-      ],
+      "matches": ["https://www.yuhikaku.co.jp/books/detail/*"],
       "run_at": "document_idle",
-      "js": [
-        "contentScript.js"
-      ]
+      "js": ["contentScript.js"]
     }
   ]
 }
