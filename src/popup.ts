@@ -1,6 +1,6 @@
 'use strict';
 
-const requestToActiveTab = (info: string) => {
+const requestToActiveTab = (requestName: string) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab.id) {
@@ -9,7 +9,7 @@ const requestToActiveTab = (info: string) => {
     chrome.tabs.sendMessage(
       tab.id,
       {
-        type: info,
+        type: requestName,
       },
       () => {}
     );
@@ -25,13 +25,20 @@ requestToActiveTab('threads-content');
 requestToActiveTab('genpon');
 requestToActiveTab('hasso');
 
-const insertPreview = (elem: HTMLElement, content: string) => {
+type Payload = {
+  type: string;
+  content: string;
+  enabled: boolean;
+};
+
+const insertPreview = (payload: Payload) => {
+  const elem = document.getElementById(payload.type);
   const pre = document.createElement('pre');
   pre.classList.add('preview');
   const c = document.createElement('code');
-  c.innerText = content;
+  c.innerText = payload.content;
   pre.appendChild(c);
-  elem.insertAdjacentElement('beforebegin', pre);
+  elem?.insertAdjacentElement('beforebegin', pre);
 };
 
 const clearCopyStatus = () => {
@@ -51,12 +58,6 @@ const copyText = (text: string, callback: copyFinishedCallback) => {
   });
 };
 
-type Payload = {
-  type: string;
-  content: string;
-  enabled: boolean;
-};
-
 const setupButton = (payload: Payload): HTMLElement | null => {
   const b = document.getElementById(payload.type);
   if (!b) {
@@ -68,16 +69,13 @@ const setupButton = (payload: Payload): HTMLElement | null => {
   return b;
 };
 
-let JUHAN_COUNT: number = 2;
-
-const onJuhanCountChanged = (event: Event) => {
-  const v = (event.target as HTMLInputElement).value;
-  JUHAN_COUNT = Number(v);
-};
-
-const JUHAN_COUNTER = document.getElementById('juhan-count');
-JUHAN_COUNTER?.addEventListener('change', onJuhanCountChanged);
-JUHAN_COUNTER?.addEventListener('input', onJuhanCountChanged);
+['change', 'juhan'].forEach((eventName) => {
+  const elem = document.getElementById('juhan-count');
+  elem?.addEventListener(eventName, (event: Event) => {
+    const v = (event.target as HTMLInputElement).value;
+    document.getElementById('x-juhan-content')!.setAttribute('juhan-count', v);
+  });
+});
 
 chrome.runtime.onMessage.addListener((request) => {
   const payload: Payload = {
@@ -94,7 +92,7 @@ chrome.runtime.onMessage.addListener((request) => {
         window.open(url, '_blank');
       });
     });
-    insertPreview(button!, payload.content);
+    insertPreview(payload);
     return;
   }
 
@@ -118,7 +116,7 @@ chrome.runtime.onMessage.addListener((request) => {
         window.open(url, '_blank');
       });
     });
-    insertPreview(button!, payload.content);
+    insertPreview(payload);
     return;
   }
 
@@ -131,7 +129,7 @@ chrome.runtime.onMessage.addListener((request) => {
         window.open(url, '_blank');
       });
     });
-    insertPreview(button!, payload.content);
+    insertPreview(payload);
     return;
   }
 
@@ -149,11 +147,16 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   if (payload.type === 'x-juhan-content') {
-    const c = payload.content;
     const button = setupButton(payload);
+    button!.setAttribute('content', payload.content);
+    if (payload.enabled) {
+      document.getElementById('juhan-count')!.removeAttribute('disabled');
+    }
     button!.addEventListener('click', () => {
+      const content = button!.getAttribute('content') || '';
+      const count = String(button!.getAttribute('juhan-count') || 2);
       const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        c.replace('●', String(JUHAN_COUNT))
+        content.replace('●', count)
       )}`;
       window.open(intent, '_blank');
     });
