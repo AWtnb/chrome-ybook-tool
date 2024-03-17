@@ -16,6 +16,15 @@
       padding-bottom: 12px;
     }
 
+    .juhan {
+      display: flex;
+    }
+
+    .juhan input[type="number"] {
+      width: 100px;
+      margin-left: 8px;
+    }
+
     pre {
       margin: 0;
       line-height: 1;
@@ -31,9 +40,6 @@
 
     button.finished::after {
       content: "\2705";
-    }
-    input[type="number"] {
-      /* width: 100px; */
     }
   </style>
 </head>
@@ -62,9 +68,16 @@
       <button disabled id="threads-content" class="">投稿画面を開く</button>
     </div>
     <hr>
-    <p><button disabled id="x-juhan-content" content="" juhan-count="2" class="">Xに重版情報を投稿</button><input type="number" value="2" min="2" id="juhan-count" disabled></p>
-    <p><button id="genpon" class="with-copy">原本カード掲載内容のコピー</button></p>
-    <p><button id="hasso" class="with-copy">発送依頼書内容のコピー</button></p>
+    <div class="box juhan">
+      <button disabled id="x-juhan-content" content="" juhan-count="2" class="">Xに重版情報を投稿</button>
+      <input type="number" value="2" min="2" id="juhan-count" disabled>
+    </div>
+    <div class="box">
+      <button id="genpon" class="with-copy">原本カード掲載内容のコピー</button>
+    </div>
+    <div class="box">
+      <button id="hasso" class="with-copy">発送依頼書内容のコピー</button>
+    </div>
 
   </div>
 
