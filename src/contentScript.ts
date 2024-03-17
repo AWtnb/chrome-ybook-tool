@@ -5,6 +5,7 @@ import {
   BookMetaInfo,
   BookSeries,
   BookTitleInfo,
+  FILLER,
 } from './pageParser';
 
 const getBookTitleElems = (): HTMLElement[] => {
@@ -58,7 +59,7 @@ const ADDITIONAL_TWEET = `書誌情報はこちら：\n${document.location}`;
 
 const JUHAN_TWEET = (() => {
   const tagsLine =
-    `#有斐閣 ${BOOK_SERIES.format()} 第●刷 #重版 しました！`.replace(
+    `#有斐閣 ${BOOK_SERIES.format()} 第${FILLER}刷 #重版 しました！`.replace(
       /\s+/g,
       ' '
     );

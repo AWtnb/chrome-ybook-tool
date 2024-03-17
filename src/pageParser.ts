@@ -1,3 +1,5 @@
+export const FILLER: string = '〓';
+
 export class BookTitleInfo {
   private readonly innerTexts: string[];
   constructor(elems: HTMLElement[]) {

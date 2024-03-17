@@ -1,5 +1,7 @@
 'use strict';
 
+import { FILLER } from './pageParser';
+
 const requestToActiveTab = (requestName: string) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
@@ -156,7 +158,7 @@ chrome.runtime.onMessage.addListener((request) => {
       const content = button!.getAttribute('content') || '';
       const count = String(button!.getAttribute('juhan-count') || 2);
       const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        content.replace('●', count)
+        content.replace(FILLER, count)
       )}`;
       window.open(intent, '_blank');
     });
