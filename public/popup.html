@@ -4,27 +4,68 @@
 <head>
   <meta charset="UTF-8" />
   <title>My Chrome Extension</title>
-  <!-- <link rel="stylesheet" href="popup.css" /> -->
+  <link rel="stylesheet" href="https://unpkg.com/chota@latest">
   <style>
-    button.finished {
-      /* border: solid red 4px; */
-      background: red;
+    .app {
+      width: 450px;
+      padding: 0 6px;
+    }
+
+    .box {
+      padding-top: 4px;
+      padding-bottom: 12px;
+    }
+
+    pre {
+      margin: 0;
+      line-height: 1;
+      max-height: 100px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      word-break: break-all;
+    }
+
+    button {
+      display: block;
+    }
+
+    button.finished::after {
+      content: "\2705";
+    }
+    input[type="number"] {
+      /* width: 100px; */
     }
   </style>
 </head>
 
 <body>
   <div class="app">
-    <div id="container">
-      <p><button disabled id="slack-slash-command" class="with-copy">Slackに登録</button></p>
-      <p><button disabled id="x-post-content" class="">Xに画像を投稿</button></p>
-      <p><button disabled id="x-thread-content" class="with-copy">Xにスレッドを投稿</button></p>
-      <p><button disabled id="x-juhan-content" class="">Xに重版を投稿</button></p>
-      <p><button disabled id="meta-content" class="with-copy">instagram・Facebookに投稿</button></p>
-      <p><button disabled id="threads-content" class="">threadsに投稿</button></p>
-      <p><button id="genpon" class="with-copy">原本カード掲載内容のコピー</button></p>
-      <p><button id="hasso" class="with-copy">発送依頼書内容のコピー</button></p>
+
+    <div class="box">
+      <label>①Slackに登録</label>
+      <button disabled id="slack-slash-command" class="with-copy">コマンドをコピーしてチャンネルを開く</button>
     </div>
+    <div class="box">
+      <label>②Xに告知ツイート</label>
+      <button disabled id="x-post-content" class="">投稿画面を開く</button>
+    </div>
+    <div class="box">
+      <label>③書誌情報をツリーにぶら下げる</label>
+      <button disabled id="x-thread-content" class="with-copy">文面をコピーしてXを開く</button>
+    </div>
+    <div class="box">
+      <label>④インスタとFacebookに同時投稿</label>
+      <button disabled id="meta-content" class="with-copy">文面をコピーして投稿画面を開く</button>
+    </div>
+    <div class="box">
+      <label>⑤Threadsに投稿</label>
+      <button disabled id="threads-content" class="">投稿画面を開く</button>
+    </div>
+    <hr>
+    <p><button disabled id="x-juhan-content" class="">Xに重版情報を投稿</button><input type="number" value="2" min="2" id="juhan-count"></p>
+    <p><button id="genpon" class="with-copy">原本カード掲載内容のコピー</button></p>
+    <p><button id="hasso" class="with-copy">発送依頼書内容のコピー</button></p>
+
   </div>
 
   <script src="popup.js"></script>

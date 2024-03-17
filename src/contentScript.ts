@@ -125,106 +125,56 @@ const HASSO_RECORD = [
   BOOK_META_INFO.getPrice(),
 ].join('\t');
 
-/**
- * イベントリスナー
- */
 chrome.runtime.onMessage.addListener((request) => {
-  if (request.askfor === 'slack-slash-command') {
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          slashCmd: '/hatsubai ' + document.location.href,
-          enabled: 0 < PUBDATE.D.length,
-        },
-      },
-      () => {}
-    );
-    return;
+  let content: string;
+  let enabled: boolean;
+  switch (request.type) {
+    case 'slack-slash-command':
+      content = `/hatsubai ${document.location.href}`;
+      enabled = 0 < PUBDATE.D.length;
+      break;
+    case 'x-post-content':
+      content = BASE_TWEET;
+      enabled = 0 < PUBDATE.D.length;
+      break;
+    case 'x-thread-content':
+      content = ADDITIONAL_TWEET;
+      enabled = 0 < PUBDATE.D.length;
+      break;
+    case 'meta-content':
+      content = INSTA_FB_THREADS_POST;
+      enabled = 0 < PUBDATE.D.length;
+      break;
+    case 'threads-content':
+      content = INSTA_FB_THREADS_POST;
+      enabled = 0 < PUBDATE.D.length;
+      break;
+    case 'x-juhan-content':
+      content = JUHAN_TWEET;
+      enabled = PUBDATE.D.length < 1;
+      break;
+    case 'genpon':
+      content = GENPON_RECORD;
+      enabled = true;
+      break;
+    case 'hasso':
+      content = HASSO_RECORD;
+      enabled = true;
+      break;
+    default:
+      content = '';
+      enabled = false;
+      break;
   }
-  if (request.askfor == 'x-post-content') {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      BASE_TWEET
-    )}`;
-    console.log(url);
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          intentUrl: url,
-          enabled: 0 < PUBDATE.D.length,
-        },
+
+  chrome.runtime.sendMessage(
+    {
+      payload: {
+        type: request.type,
+        content: content,
+        enabled: enabled,
       },
-      () => {}
-    );
-    return;
-  }
-  if (request.askfor == 'x-thread-content') {
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          twtContent: ADDITIONAL_TWEET,
-          enabled: 0 < PUBDATE.D.length,
-        },
-      },
-      () => {}
-    );
-    return;
-  }
-  if (request.askfor == 'x-juhan-content') {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      JUHAN_TWEET
-    )}`;
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          intentUrl: url,
-          enabled: 0 < PUBDATE.D.length,
-        },
-      },
-      () => {}
-    );
-    return;
-  }
-  if (request.askfor == 'meta-content' || request.askfor == 'threads-content') {
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          content: INSTA_FB_THREADS_POST,
-          enabled: 0 < PUBDATE.D.length,
-        },
-      },
-      () => {}
-    );
-    return;
-  }
-  if (request.askfor == 'genpon') {
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          content: GENPON_RECORD,
-          enabled: true,
-        },
-      },
-      () => {}
-    );
-    return;
-  }
-  if (request.askfor == 'hasso') {
-    chrome.runtime.sendMessage(
-      {
-        id: request.askfor,
-        payload: {
-          content: HASSO_RECORD,
-          enabled: true,
-        },
-      },
-      () => {}
-    );
-    return;
-  }
+    },
+    () => {}
+  );
 });
