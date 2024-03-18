@@ -106,6 +106,7 @@ chrome.runtime.onMessage.addListener((request) => {
     button!.addEventListener('click', () => {
       window.open(intent, '_blank');
     });
+    insertPreview(payload);
     return;
   }
 

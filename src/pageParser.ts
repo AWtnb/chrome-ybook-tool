@@ -1,30 +1,33 @@
 export const FILLER: string = '〓';
 
+const getInnerTextByClassName = (
+  elems: HTMLElement[],
+  className: string
+): string => {
+  const found = elems.filter((elem) => elem.classList.contains(className));
+  return 0 < found.length ? found[0].innerText : '';
+};
+
 export class BookTitleInfo {
-  private readonly innerTexts: string[];
+  private readonly main: string;
+  private readonly sub: string;
+  private readonly rev: string;
   constructor(elems: HTMLElement[]) {
-    this.innerTexts = elems.map((elem) => elem.innerText);
+    this.main = getInnerTextByClassName(elems, "goods_goods_name");
+    this.sub = getInnerTextByClassName(elems, "goods_subtitle_last_name");
+    this.rev = getInnerTextByClassName(elems, "goods_last_version");
   }
 
   getMain(): string {
-    return this.innerTexts[0].trim();
+    return this.main.trim() + this.rev;
   }
 
   getSub(): string {
-    const c = ' -- ';
-    const found = this.innerTexts.filter((t) => t.startsWith(c));
-    if (found.length) {
-      return found[0].substring(c.length).trim();
-    }
-    return '';
+    return this.sub.replace(/ -- /, "");
   }
 
   getRevision(): string {
-    const found = this.innerTexts.filter((t) => t.indexOf('版') != -1);
-    if (found.length) {
-      return found[0].trim();
-    }
-    return '';
+    return this.rev.trim();
   }
 
   getRevisionType(): string {
