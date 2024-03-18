@@ -13,9 +13,9 @@ export class BookTitleInfo {
   private readonly sub: string;
   private readonly rev: string;
   constructor(elems: HTMLElement[]) {
-    this.main = getInnerTextByClassName(elems, "goods_goods_name");
-    this.sub = getInnerTextByClassName(elems, "goods_subtitle_last_name");
-    this.rev = getInnerTextByClassName(elems, "goods_last_version");
+    this.main = getInnerTextByClassName(elems, 'goods_goods_name');
+    this.sub = getInnerTextByClassName(elems, 'goods_subtitle_last_name');
+    this.rev = getInnerTextByClassName(elems, 'goods_last_version');
   }
 
   getMain(): string {
@@ -23,7 +23,7 @@ export class BookTitleInfo {
   }
 
   getSub(): string {
-    return this.sub.replace(/ -- /, "");
+    return this.sub.replace(/ -- /, '');
   }
 
   getRevision(): string {
@@ -53,19 +53,27 @@ export class AuthorInfo {
     );
   }
 
-  getWritingStyle(): string {
+  getFull(): string {
     if (!this.elem) {
       return '';
     }
-    const ss = this.elem.innerText.trim().split('／');
-    if (0 < ss.length) {
-      return '／' + ss.slice(-1)[0];
-    }
-    return '';
-  }
-
-  getFull(): string {
-    return this.getMember().join('・') + this.getWritingStyle();
+    const ss: string[] = [];
+    Array.from(this.elem.querySelectorAll<HTMLElement>('a')).forEach((atag) => {
+      const name = atag.innerText.replace(/\s/g, '');
+      const ne = atag.nextSibling;
+      if (!ne || ne.nodeName !== '#text') {
+        ss.push(name);
+        return;
+      }
+      const te = ne.nodeValue || '';
+      if (!te.includes('／')) {
+        ss.push(name);
+        return;
+      }
+      const suf = te.replace(/^.+／/, '／');
+      ss.push(name + suf + '，');
+    });
+    return ss.join('・').replace(/，・/g, '，').replace(/，$/, '');
   }
 }
 
