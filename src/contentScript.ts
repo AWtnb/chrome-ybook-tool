@@ -76,7 +76,9 @@ const getGenres = (): string[] => {
       .split('・')
       .map((s) => s.trim().replace(/（.+?）/g, ''))
       .forEach((s) => {
-        ss.push(s);
+        if (!ss.includes(s)) {
+          ss.push(s);
+        }
       });
   });
   return ss;
