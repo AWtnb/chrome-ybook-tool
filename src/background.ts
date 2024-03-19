@@ -5,27 +5,29 @@
 'use strict';
 const TARGET = 'https://www.yuhikaku.co.jp/books/detail/';
 
-const changePopup = (url: string | undefined) => {
-  if (!url) {
-    return;
-  }
-  if (url.startsWith(TARGET)) {
-    chrome.action.setPopup({ popup: './popup.html' });
-  } else {
-    chrome.action.setPopup({ popup: '' });
-  }
+const updateConfig = (isTarget: boolean) => {
+  const popupPath = isTarget ? './popup.html' : '';
+  const iconPath = isTarget ? './icons/cremesoda01_128.png' : './icons/icon_128.png';
+  console.log(iconPath);
+  chrome.action.setPopup({ popup: popupPath }).then(() => {
+    chrome.action.setIcon({ path: iconPath });
+  });
 };
 
 chrome.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab: chrome.tabs.Tab) => {
-    changePopup(tab.url);
+    if (!tab.url) {
+      return;
+    }
+    updateConfig(tab.url.startsWith(TARGET));
   });
 });
 
 chrome.tabs.onUpdated.addListener(
   (_: number, change: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
-    if (tab.active && change.url) {
-      changePopup(tab.url);
+    if (!tab.active || !change.url || !tab.url) {
+      return;
     }
+    updateConfig(tab.url.startsWith(TARGET));
   }
 );
