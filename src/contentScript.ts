@@ -58,12 +58,12 @@ const BASE_TWEET = (() => {
 const ADDITIONAL_TWEET = `書誌情報はこちら：\n${document.location}`;
 
 const JUHAN_TWEET = (() => {
-  const tagsLine =
-    `#有斐閣 ${BOOK_SERIES.format()} 第${FILLER}刷 #重版 しました！`.replace(
+  const bookLine =
+    `#有斐閣 ${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.replace(
       /\s+/g,
       ' '
     );
-  return [tagsLine, BOOK_MINIMAL_INFO, '', document.location].join('\n');
+  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location].join('\n');
 })();
 
 const getGenres = (): string[] => {
