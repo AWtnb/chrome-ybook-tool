@@ -8,7 +8,6 @@ const TARGET = 'https://www.yuhikaku.co.jp/books/detail/';
 const updateConfig = (isTarget: boolean) => {
   const popupPath = isTarget ? './popup.html' : '';
   const iconPath = isTarget ? './icons/cremesoda01_128.png' : './icons/icon_128.png';
-  console.log(iconPath);
   chrome.action.setPopup({ popup: popupPath }).then(() => {
     chrome.action.setIcon({ path: iconPath });
   });
