@@ -47,6 +47,7 @@ const BASE_TWEET = (() => {
     '有斐閣',
     BOOK_SERIES.format(),
     BOOK_TITLE_INFO.getRevisionType(),
+    '見本出来',
   ]
     .filter((t) => t.length)
     .map((t) => '#' + t)
@@ -59,11 +60,10 @@ const ADDITIONAL_TWEET = `書誌情報はこちら：\n${document.location}`;
 
 const JUHAN_TWEET = (() => {
   const bookLine =
-    `#有斐閣 ${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.replace(
-      /\s+/g,
-      ' '
-    );
-  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location].join('\n');
+    `#有斐閣 ${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.replace(/\s+/g, ' ');
+  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location].join(
+    '\n'
+  );
 })();
 
 const getGenres = (): string[] => {
@@ -90,6 +90,7 @@ const INSTA_FB_THREADS_POST = (() => {
     '有斐閣',
     BOOK_SERIES.format(),
     BOOK_TITLE_INFO.getRevisionType(),
+    '見本出来',
     '本',
     'book',
     'bookstagram',
