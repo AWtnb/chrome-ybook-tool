@@ -13,7 +13,11 @@ const requestToActiveTab = (requestName: string) => {
       {
         type: requestName,
       },
-      () => {}
+      () => {
+        if (chrome.runtime.lastError) {
+          console.log('something happened: ', chrome.runtime.lastError.message);
+        }
+      }
     );
   });
 };

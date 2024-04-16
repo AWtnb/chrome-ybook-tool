@@ -115,7 +115,7 @@ const INSTA_FB_THREADS_POST = (() => {
 })();
 
 const GENPON_RECORD = [
-  `（${getGenres()[0]}）`,
+  `（${getGenres().join('・')}）`,
   BOOK_TITLE_INFO.getMain(),
   BOOK_SERIES.forGenpon(),
   AUTHORS.getMember().join('・'),
@@ -179,6 +179,10 @@ chrome.runtime.onMessage.addListener((request) => {
         enabled: enabled,
       },
     },
-    () => {}
+    () => {
+      if (chrome.runtime.lastError) {
+        console.log('something happened: ', chrome.runtime.lastError.message);
+      }
+    }
   );
 });
