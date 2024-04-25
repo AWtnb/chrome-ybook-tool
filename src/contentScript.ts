@@ -1,5 +1,7 @@
 'use strict';
 
+import { RequestType } from './helper';
+
 import {
   AuthorInfo,
   BookMetaInfo,
@@ -133,35 +135,35 @@ chrome.runtime.onMessage.addListener((request) => {
   let content: string;
   let enabled: boolean;
   switch (request.type) {
-    case 'slack-slash-command':
+    case RequestType.SlackSlashCommand:
       content = `/hatsubai ${document.location.href}`;
       enabled = 0 < PUBDATE.D.length;
       break;
-    case 'x-post-content':
+    case RequestType.XPostContent:
       content = BASE_TWEET;
       enabled = 0 < PUBDATE.D.length;
       break;
-    case 'x-thread-content':
+    case RequestType.XThreadContent:
       content = ADDITIONAL_TWEET;
       enabled = 0 < PUBDATE.D.length;
       break;
-    case 'meta-content':
+    case RequestType.MetaContent:
       content = INSTA_FB_THREADS_POST;
       enabled = 0 < PUBDATE.D.length;
       break;
-    case 'threads-content':
+    case RequestType.ThreadsContent:
       content = INSTA_FB_THREADS_POST;
       enabled = 0 < PUBDATE.D.length;
       break;
-    case 'x-juhan-content':
+    case RequestType.XJuhanContent:
       content = JUHAN_TWEET;
       enabled = PUBDATE.D.length < 1;
       break;
-    case 'genpon':
+    case RequestType.Genpon:
       content = GENPON_RECORD;
       enabled = true;
       break;
-    case 'hasso':
+    case RequestType.Hasso:
       content = HASSO_RECORD;
       enabled = true;
       break;

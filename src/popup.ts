@@ -1,8 +1,9 @@
 'use strict';
 
+import { RequestType } from './helper';
 import { FILLER } from './pageParser';
 
-const requestToActiveTab = (requestName: string) => {
+const requestToActiveTab = (requestType: string) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab.id) {
@@ -11,7 +12,7 @@ const requestToActiveTab = (requestName: string) => {
     chrome.tabs.sendMessage(
       tab.id,
       {
-        type: requestName,
+        type: requestType,
       },
       () => {
         if (chrome.runtime.lastError) {
@@ -22,14 +23,14 @@ const requestToActiveTab = (requestName: string) => {
   });
 };
 
-requestToActiveTab('slack-slash-command');
-requestToActiveTab('x-post-content');
-requestToActiveTab('x-thread-content');
-requestToActiveTab('x-juhan-content');
-requestToActiveTab('meta-content');
-requestToActiveTab('threads-content');
-requestToActiveTab('genpon');
-requestToActiveTab('hasso');
+requestToActiveTab(RequestType.SlackSlashCommand);
+requestToActiveTab(RequestType.XPostContent);
+requestToActiveTab(RequestType.XThreadContent);
+requestToActiveTab(RequestType.XJuhanContent);
+requestToActiveTab(RequestType.MetaContent);
+requestToActiveTab(RequestType.ThreadsContent);
+requestToActiveTab(RequestType.Genpon);
+requestToActiveTab(RequestType.Hasso);
 
 type Payload = {
   type: string;
