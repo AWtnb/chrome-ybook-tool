@@ -1,6 +1,6 @@
 'use strict';
 
-import { RequestType } from './helper';
+import { RequestType, from5code } from './helper';
 import { FILLER } from './pageParser';
 
 const requestToActiveTab = (requestType: string) => {
@@ -76,12 +76,18 @@ const setupButton = (payload: Payload): HTMLElement | null => {
   return b;
 };
 
-['change', 'juhan'].forEach((eventName) => {
-  const elem = document.getElementById('juhan-count');
-  elem?.addEventListener(eventName, (event: Event) => {
+document
+  .getElementById('juhan-count')
+  ?.addEventListener('change', (event: Event) => {
     const v = (event.target as HTMLInputElement).value;
     document.getElementById('x-juhan-content')!.setAttribute('juhan-count', v);
   });
+
+document.getElementById('jump-button')?.addEventListener('click', () => {
+  const ycode = (document.getElementById('ybook-code')! as HTMLInputElement)
+    .value;
+  const url = `https://www.yuhikaku.co.jp/books/detail/${from5code(ycode)}`;
+  window.open(url, '_blank');
 });
 
 chrome.runtime.onMessage.addListener((request) => {

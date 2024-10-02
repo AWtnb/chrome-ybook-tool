@@ -25,6 +25,15 @@
       margin-right: 8px;
     }
 
+    .jump {
+      display: flex;
+    }
+
+    .jump input[type="text"] {
+      width: 200px;
+      margin-right: 8px;
+    }
+
     pre {
       margin: 0;
       line-height: 1;
@@ -45,7 +54,11 @@
 
 <body>
   <div class="app">
-
+    <div class="box jump">
+      <input type="text" id="ybook-code">
+      <button id="jump-button">5桁コードでジャンプ</button>
+    </div>
+    <hr>
     <div class="box">
       <label>①Slackに登録</label>
       <button disabled id="slack-slash-command" class="with-copy">コマンドをコピーしてチャンネルを開く</button>
