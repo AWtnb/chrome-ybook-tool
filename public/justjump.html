@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>My Chrome Extension</title>
+  <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+  <style>
+    .app {
+      width: 450px;
+      padding: 6px;
+    }
+
+    .jump {
+      justify-content: space-between;
+      display: flex;
+    }
+
+    .jump input {
+      margin-right: 8px;
+    }
+
+    .jump button {
+      min-width: max-content;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="box jump">
+      <input type="text" id="ybook-code">
+      <button id="jump-button">5桁コードでジャンプ</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

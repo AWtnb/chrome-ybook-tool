@@ -8,7 +8,7 @@
   <style>
     .app {
       width: 450px;
-      padding: 0 6px;
+      padding: 6px;
     }
 
     .box {
@@ -26,12 +26,16 @@
     }
 
     .jump {
+      justify-content: space-between;
       display: flex;
     }
 
-    .jump input[type="text"] {
-      width: 200px;
+    .jump input {
       margin-right: 8px;
+    }
+
+    .jump button {
+      min-width: max-content;
     }
 
     pre {
