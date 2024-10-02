@@ -83,12 +83,22 @@ document
     document.getElementById('x-juhan-content')!.setAttribute('juhan-count', v);
   });
 
-document.getElementById('jump-button')?.addEventListener('click', () => {
-  const ycode = (document.getElementById('ybook-code')! as HTMLInputElement)
-    .value;
-  const url = `https://www.yuhikaku.co.jp/books/detail/${from5code(ycode)}`;
+const YCODE_INPUT = document.getElementById('ybook-code') as HTMLInputElement;
+YCODE_INPUT.focus();
+
+const jumpByCode = () => {
+  const url = `https://www.yuhikaku.co.jp/books/detail/${from5code(
+    YCODE_INPUT.value
+  )}`;
   window.open(url, '_blank');
-});
+};
+YCODE_INPUT.onkeydown = (ev: KeyboardEvent) => {
+  if (ev.key == 'Enter') {
+    jumpByCode();
+  }
+};
+
+document.getElementById('jump-button')?.addEventListener('click', jumpByCode);
 
 chrome.runtime.onMessage.addListener((request) => {
   const payload: Payload = {
