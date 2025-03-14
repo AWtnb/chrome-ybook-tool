@@ -131,6 +131,14 @@ const HASSO_RECORD = [
   BOOK_META_INFO.getPrice(),
 ].join('\t');
 
+const GENERAL_INFO = [
+  `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`,
+  '',
+  document.getElementById('cont_box_m30')?.innerText || '',
+  '',
+  document.location,
+].join('\n');
+
 chrome.runtime.onMessage.addListener((request) => {
   let content: string;
   let enabled: boolean;
@@ -165,6 +173,10 @@ chrome.runtime.onMessage.addListener((request) => {
       break;
     case RequestType.Hasso:
       content = HASSO_RECORD;
+      enabled = true;
+      break;
+    case RequestType.GeneralInfo:
+      content = GENERAL_INFO;
       enabled = true;
       break;
     default:

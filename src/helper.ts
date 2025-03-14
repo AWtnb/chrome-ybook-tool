@@ -7,6 +7,7 @@ export enum RequestType {
   'ThreadsContent' = 'threads-content',
   'Genpon' = 'genpon',
   'Hasso' = 'hasso',
+  'GeneralInfo' = 'general-info',
 }
 
 const getCheckDigit = (isbn: string): number => {

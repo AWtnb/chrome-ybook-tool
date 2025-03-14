@@ -31,6 +31,7 @@ requestToActiveTab(RequestType.MetaContent);
 requestToActiveTab(RequestType.ThreadsContent);
 requestToActiveTab(RequestType.Genpon);
 requestToActiveTab(RequestType.Hasso);
+requestToActiveTab(RequestType.GeneralInfo);
 
 type Payload = {
   type: string;
@@ -107,7 +108,7 @@ chrome.runtime.onMessage.addListener((request) => {
     enabled: request.payload.enabled,
   };
 
-  if (payload.type === 'slack-slash-command') {
+  if (payload.type === RequestType.SlackSlashCommand) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -119,7 +120,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'x-post-content') {
+  if (payload.type === RequestType.XPostContent) {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       payload.content
     )}`;
@@ -131,7 +132,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'x-thread-content') {
+  if (payload.type === RequestType.XThreadContent) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -144,7 +145,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'meta-content') {
+  if (payload.type === RequestType.MetaContent) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -157,7 +158,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'threads-content') {
+  if (payload.type === RequestType.ThreadsContent) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -170,7 +171,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'x-juhan-content') {
+  if (payload.type === RequestType.XJuhanContent) {
     const button = setupButton(payload);
     button!.setAttribute('content', payload.content);
     if (payload.enabled) {
@@ -187,17 +188,11 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'genpon') {
-    const button = setupButton(payload);
-    button!.addEventListener('click', () => {
-      copyText(payload.content, () => {
-        button?.classList.add('finished');
-      });
-    });
-    return;
-  }
-
-  if (payload.type === 'hasso') {
+  if (
+    payload.type === RequestType.Genpon ||
+    payload.type === RequestType.Hasso ||
+    payload.type === RequestType.GeneralInfo
+  ) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
