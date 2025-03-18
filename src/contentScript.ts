@@ -134,7 +134,7 @@ const HASSO_RECORD = [
 const GENERAL_INFO = [
   `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`,
   '',
-  document.getElementById('cont_box_m30')?.innerText || '',
+  document.getElementById('cont_box_m30')?.innerText.replace(/\uff0c/g, "、") || '',
   '',
   document.location,
 ].join('\n');
