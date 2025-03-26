@@ -132,7 +132,7 @@ const HASSO_RECORD = [
 ].join('\t');
 
 const GENERAL_INFO = [
-  `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`,
+  `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.trim(),
   '',
   document.getElementById('cont_box_m30')?.innerText.replace(/\uff0c/g, "、") || '',
   '',
