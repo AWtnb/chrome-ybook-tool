@@ -134,10 +134,16 @@ const HASSO_RECORD = [
 const GENERAL_INFO = [
   `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.trim(),
   '',
-  document.getElementById('cont_box_m30')?.innerText.replace(/\uff0c/g, "、") || '',
+  document.getElementById('cont_box_m30')?.innerText.replace(/\uff0c/g, '、') ||
+    '',
   '',
   document.location,
 ].join('\n');
+
+const MINIMAL_INFO = [
+  `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.trim(),
+  `（${BOOK_META_INFO.getFiveCode()}）`,
+].join('');
 
 chrome.runtime.onMessage.addListener((request) => {
   let content: string;
@@ -177,6 +183,10 @@ chrome.runtime.onMessage.addListener((request) => {
       break;
     case RequestType.GeneralInfo:
       content = GENERAL_INFO;
+      enabled = true;
+      break;
+    case RequestType.MinimalInfo:
+      content = MINIMAL_INFO;
       enabled = true;
       break;
     default:

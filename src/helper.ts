@@ -8,6 +8,7 @@ export enum RequestType {
   'Genpon' = 'genpon',
   'Hasso' = 'hasso',
   'GeneralInfo' = 'general-info',
+  'MinimalInfo' = 'minimal-info',
 }
 
 const getCheckDigit = (isbn: string): number => {

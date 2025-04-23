@@ -32,6 +32,7 @@ requestToActiveTab(RequestType.ThreadsContent);
 requestToActiveTab(RequestType.Genpon);
 requestToActiveTab(RequestType.Hasso);
 requestToActiveTab(RequestType.GeneralInfo);
+requestToActiveTab(RequestType.MinimalInfo);
 
 type Payload = {
   type: string;
@@ -191,7 +192,8 @@ chrome.runtime.onMessage.addListener((request) => {
   if (
     payload.type === RequestType.Genpon ||
     payload.type === RequestType.Hasso ||
-    payload.type === RequestType.GeneralInfo
+    payload.type === RequestType.GeneralInfo ||
+    payload.type === RequestType.MinimalInfo
   ) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {

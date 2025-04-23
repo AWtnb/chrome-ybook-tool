@@ -44,6 +44,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       word-break: break-all;
+      max-height: 80px;
     }
 
     button {
@@ -52,6 +53,13 @@
 
     button.finished::after {
       content: "\2705";
+    }
+
+    #common {
+      display: flex;
+    }
+    #common .box {
+      margin-right: 10px;
     }
   </style>
 </head>
@@ -63,8 +71,14 @@
       <button id="jump-button">5桁コードでジャンプ</button>
     </div>
     <hr>
-    <div class="box">
-      <button disabled id="general-info" class="with-copy">基本情報のコピー</button>
+    <p>基本情報のコピー</p>
+    <div id="common">
+      <div class="box">
+        <button disabled id="minimal-info" class="with-copy">Minimal</button>
+      </div>
+      <div class="box">
+        <button disabled id="general-info" class="with-copy">Full</button>
+      </div>
     </div>
     <div class="box">
       <label>①Slackに登録</label>
