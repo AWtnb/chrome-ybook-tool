@@ -141,9 +141,9 @@ const GENERAL_INFO = [
 ].join('\n');
 
 const MINIMAL_INFO = [
+  BOOK_META_INFO.getFiveCode(),
   `${BOOK_SERIES.format()} ${BOOK_MINIMAL_INFO}`.trim(),
-  `（${BOOK_META_INFO.getFiveCode()}）`,
-].join('');
+].join(' ');
 
 chrome.runtime.onMessage.addListener((request) => {
   let content: string;
