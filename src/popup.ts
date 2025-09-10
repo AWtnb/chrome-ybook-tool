@@ -23,16 +23,16 @@ const requestToActiveTab = (requestType: RequestType) => {
   });
 };
 
-requestToActiveTab('SlackSlashCommand');
-requestToActiveTab('XPostContent');
-requestToActiveTab('XTreeContent');
-requestToActiveTab('XJuhanContent');
-requestToActiveTab('MetaContent');
-requestToActiveTab('ThreadsContent');
-requestToActiveTab('Genpon');
-requestToActiveTab('Hasso');
-requestToActiveTab('GeneralInfo');
-requestToActiveTab('MinimalInfo');
+requestToActiveTab('slack-slash-command');
+requestToActiveTab('x-post-content');
+requestToActiveTab('x-tree-content');
+requestToActiveTab('x-juhan-content');
+requestToActiveTab('meta-content');
+requestToActiveTab('threads-content');
+requestToActiveTab('genpon');
+requestToActiveTab('hasso');
+requestToActiveTab('general-info');
+requestToActiveTab('minimal-info');
 
 export type Payload = {
   type: RequestType;
@@ -104,16 +104,11 @@ YCODE_INPUT.onkeydown = (ev: KeyboardEvent) => {
 document.getElementById('jump-button')?.addEventListener('click', jumpByCode);
 
 chrome.runtime.onMessage.addListener((request) => {
-  const payload: Payload = {
-    type: request.payload.type,
-    content: request.payload.content,
-    enabled: request.payload.enabled,
-    params: request.payload.params,
-  };
+  const payload: Payload = request.payload;
 
-  if (payload.type === 'SlackSlashCommand') {
+  if (payload.type === 'slack-slash-command') {
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url = 'https://digi-yuhi.slack.com/archives/C03HZP034P5';
         window.open(url, '_blank');
@@ -123,32 +118,32 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'XPostContent') {
+  if (payload.type === 'x-post-content') {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       payload.content
     )}#${payload.params[0]}`;
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       window.open(intent, '_blank');
     });
     insertPreview(payload);
     return;
   }
 
-  if (payload.type === 'XTreeContent') {
+  if (payload.type === 'x-tree-content') {
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       copyText(payload.content, () => {
-        button!.classList.add('finished');
+        button?.classList.add('finished');
       });
     });
     insertPreview(payload);
     return;
   }
 
-  if (payload.type === 'MetaContent') {
+  if (payload.type === 'meta-content') {
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url =
           'https://business.facebook.com/latest/composer?ref=biz_web_content_manager_published_posts&asset_id=101509805373062&context_ref=POSTS&business_id=114292853233117';
@@ -159,9 +154,9 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'ThreadsContent') {
+  if (payload.type === 'threads-content') {
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
           payload.content
@@ -172,15 +167,15 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'XJuhanContent') {
+  if (payload.type === 'x-juhan-content') {
     const button = setupButton(payload);
-    button!.setAttribute('content', payload.content);
+    button?.setAttribute('content', payload.content);
     if (payload.enabled) {
       document.getElementById('juhan-count')!.removeAttribute('disabled');
     }
-    button!.addEventListener('click', () => {
-      const content = button!.getAttribute('content') || '';
-      const count = String(button!.getAttribute('juhan-count') || 2);
+    button?.addEventListener('click', () => {
+      const content = button?.getAttribute('content') || '';
+      const count = String(button?.getAttribute('juhan-count') || 2);
       const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
         content.replace(FILLER, count)
       )}`;
@@ -190,13 +185,13 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   if (
-    payload.type === 'Genpon' ||
-    payload.type === 'Hasso' ||
-    payload.type === 'GeneralInfo' ||
-    payload.type === 'MinimalInfo'
+    payload.type === 'genpon' ||
+    payload.type === 'hasso' ||
+    payload.type === 'general-info' ||
+    payload.type === 'minimal-info'
   ) {
     const button = setupButton(payload);
-    button!.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         button?.classList.add('finished');
       });

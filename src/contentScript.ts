@@ -40,16 +40,16 @@ const getMainTweet = (): string => {
     .map((t) => '#' + t)
     .join(' ');
   const ts = getTimeStamp();
-  const detailLine = `${getBookMinimalInfo} ${ts.M}月${ts.D}日発売予定！`;
+  const detailLine = `${getBookMinimalInfo()} ${ts.M}月${ts.D}日発売予定！`;
   return [tagsLine, detailLine].join('\n');
 };
 
 const getJuhanTweet = () => {
-  const bookLine = `#有斐閣 ${getBookSeries()} ${getBookMinimalInfo}`.replace(
+  const bookLine = `#有斐閣 ${getBookSeries()} ${getBookMinimalInfo()}`.replace(
     /\s+/g,
     ' '
   );
-  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location].join(
+  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location.href].join(
     '\n'
   );
 };
@@ -76,7 +76,7 @@ const getFacebookThreadsPost = () => {
     ' ' +
     '#教科書 #テキスト #textbook #出版社公式 #出版 #中の人 #装丁 #文化 #勉強 #読書 #読者垢 #大学生 #大人の勉強垢 #教養 #勉強垢さんと繋がりたい #読書好きな人と繋がりたい #本好きな人と繋がりたい';
   return [
-    getBookMinimalInfo,
+    getBookMinimalInfo(),
     pubdateLine,
     '',
     document.location,
@@ -105,7 +105,7 @@ const getHassoIraishoLine = (): string => {
 
 const getGeneralInfoToShare = (): string => {
   return [
-    `${getBookSeries()} ${getBookMinimalInfo}`.trim(),
+    `${getBookSeries()} ${getBookMinimalInfo()}`.trim(),
     '',
     document
       .getElementById('cont_box_m30')
@@ -118,19 +118,14 @@ const getGeneralInfoToShare = (): string => {
 const getMinimalInfoToShare = (): string => {
   return [
     getFiveCode(),
-    `${getBookSeries()} ${getBookMinimalInfo}`.trim(),
+    `${getBookSeries()} ${getBookMinimalInfo()}`.trim(),
   ].join(' ');
 };
 
 const replyToPopup = (payload: Payload) => {
   chrome.runtime.sendMessage(
     {
-      payload: {
-        type: payload.type,
-        content: payload.content,
-        enabled: payload.enabled,
-        params: payload.params,
-      },
+      payload: payload,
     },
     () => {
       if (chrome.runtime.lastError) {
@@ -142,7 +137,7 @@ const replyToPopup = (payload: Payload) => {
 
 chrome.runtime.onMessage.addListener((request) => {
   const p: Payload = {
-    type: '',
+    type: request.type,
     content: '',
     enabled: false,
     params: [],

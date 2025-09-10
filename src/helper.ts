@@ -1,14 +1,14 @@
 export type RequestType =
-  | 'SlackSlashCommand'
-  | 'XPostContent'
-  | 'XTreeContent'
-  | 'XJuhanContent'
-  | 'MetaContent'
-  | 'ThreadsContent'
-  | 'Genpon'
-  | 'Hasso'
-  | 'GeneralInfo'
-  | 'MinimalInfo'
+  | 'slack-slash-command'
+  | 'x-post-content'
+  | 'x-tree-content'
+  | 'x-juhan-content'
+  | 'meta-content'
+  | 'threads-content'
+  | 'genpon'
+  | 'hasso'
+  | 'general-info'
+  | 'minimal-info'
   | '';
 
 const getCheckDigit = (isbn: string): number => {
