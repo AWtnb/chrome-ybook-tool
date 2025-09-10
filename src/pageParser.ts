@@ -1,81 +1,94 @@
 export const FILLER: string = '〓';
 
-const getInnerTextByClassName = (
-  elems: HTMLElement[],
-  className: string
-): string => {
-  const found = elems.filter((elem) => elem.classList.contains(className));
-  return 0 < found.length ? found[0].innerText : '';
+export const getISBN = (): string => {
+  const u = new URL(document.location.href);
+  const s = u.pathname.split('/').at(-1);
+  if (s && s.startsWith('9784641') && s.length == 13) {
+    return s;
+  }
+  return '';
 };
 
-export class BookTitleInfo {
-  private readonly main: string;
-  private readonly sub: string;
-  private readonly rev: string;
-  constructor(elems: HTMLElement[]) {
-    this.main = getInnerTextByClassName(elems, 'goods_goods_name');
-    this.sub = getInnerTextByClassName(elems, 'goods_subtitle_last_name');
-    this.rev = getInnerTextByClassName(elems, 'goods_last_version');
-  }
+const getBookTitleInfo = (target: 'main' | 'sub' | 'rev'): string => {
+  const elems = Array.from(
+    document.querySelectorAll<HTMLElement>('#cont_box_title2_1 > h1 > span')
+  );
+  const clsName = (() => {
+    if (target == 'main') return 'goods_goods_name';
+    if (target == 'sub') return 'goods_subtitle_last_name';
+    return 'goods_last_version';
+  })();
+  return (
+    elems
+      .filter((el) => el.classList.contains(clsName))
+      .at(0)
+      ?.innerText?.trim() || ''
+  );
+};
 
-  getMain(): string {
-    return this.main.trim() + this.rev;
-  }
+const getBookPageBookTitleRev = (): string => {
+  return getBookTitleInfo('rev');
+};
 
-  getSub(): string {
-    return this.sub.replace(/ -- /, '');
-  }
+export const getBookTitle = (): string => {
+  return getBookTitleInfo('main') + getBookPageBookTitleRev();
+};
 
-  getRevision(): string {
-    return this.rev.trim();
-  }
+export const getBookSubTitle = (): string => {
+  return getBookTitleInfo('sub').replace(' -- ', '');
+};
 
-  getRevisionType(): string {
-    if (this.getRevision().length) {
-      return '改訂版';
-    }
-    return '新刊';
+export const getBookRevisionType = (): string => {
+  if (0 < getBookPageBookTitleRev().length) {
+    return '改訂版';
   }
-}
+  return '新刊';
+};
 
-export class AuthorInfo {
-  private readonly elem: HTMLElement | null;
-  constructor(elem: HTMLElement | null) {
-    this.elem = elem;
-  }
+export const getAuthors = (): string[] => {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>('#cont_box_txt1 > h2 a')
+  ).map((el) => {
+    return el.innerText.replace(/\s/g, '');
+  });
+};
 
-  getMember(): string[] {
-    if (!this.elem) {
-      return [];
-    }
-    return Array.from(this.elem.querySelectorAll<HTMLElement>('a')).map(
-      (elem) => elem.innerText.replace(/\s/, '')
-    );
-  }
-
-  getFull(): string {
-    if (!this.elem) {
-      return '';
-    }
-    const ss: string[] = [];
-    Array.from(this.elem.querySelectorAll<HTMLElement>('a')).forEach((atag) => {
-      const name = atag.innerText.replace(/\s/g, '');
-      const ne = atag.nextSibling;
-      if (!ne || ne.nodeName !== '#text') {
-        ss.push(name);
-        return;
+export const getAuthorsLine = (): string => {
+  const stack: string[] = [];
+  Array.from(
+    document.querySelectorAll<HTMLElement>('#cont_box_txt1 > h2 a')
+  ).map((el) => {
+    const name = el.innerText.replace(/\s/g, '');
+    stack.push(name);
+    const next = el.nextSibling;
+    if (!next) return;
+    if (next.nodeName !== '#text') return;
+    const nv = next.nodeValue;
+    if (!nv) return;
+    const i = nv.lastIndexOf('／');
+    if (i == -1) return;
+    stack.push(nv.substring(i));
+  });
+  return stack
+    .reduce((accum: string, s: string) => {
+      if (s.startsWith('／')) {
+        accum += s;
+        accum += '，';
+        return accum;
       }
-      const te = ne.nodeValue || '';
-      if (!te.includes('／')) {
-        ss.push(name);
-        return;
+      if (accum && !accum.endsWith('，')) {
+        accum += '・';
       }
-      const suf = te.replace(/^.+／/, '／');
-      ss.push(name + suf + '，');
-    });
-    return ss.join('・').replace(/，・/g, '，').replace(/，$/, '');
-  }
-}
+      accum += s;
+      return accum;
+    }, '')
+    .replace(/，$/, '');
+};
+
+const getMetaInfoLines = (): string[] => {
+  const elem = document.querySelector<HTMLElement>('#cont_box_txt1 > span');
+  return elem?.innerText?.split(/[\r\n]+/) || [];
+};
 
 type PubDate = {
   Y: string;
@@ -83,71 +96,77 @@ type PubDate = {
   D: string;
 };
 
-export const parsePubDate = (s: string): PubDate => {
-  const parts = s.split(/[年月]/);
-  const y = String(Number(parts[0]));
-  const m = String(Number(parts[1]));
-  const last = String(parts[2]);
-  const pd: PubDate = { Y: y, M: m, D: '' };
-  if (last.match(/^\d/)) {
-    pd.D = String(Number(last.replace(/[^\d]/g, '')));
-  }
-  return pd;
+export const getTimeStamp = (): PubDate => {
+  const lines = getMetaInfoLines();
+  const line = lines.filter((l) => l.indexOf('年') != -1).at(0) || '';
+  const ss = line.replace(/.発売/, '').split(/[年月]/);
+  const d = 2 < ss.length ? ss[2] : '';
+  return { Y: ss[0], M: String(Number(ss[1])), D: d };
 };
 
-export class BookMetaInfo {
-  private readonly lines: string[];
-  constructor(text: string) {
-    this.lines = text.split(/[\r\n]+/);
-  }
+export const getPrice = (): string => {
+  return (
+    getMetaInfoLines()
+      .filter((l) => l.indexOf('定価') != -1)
+      .at(0)
+      ?.replace(/定価.+本体/, '')
+      .replace(/円）/, '')
+      .trim() || ''
+  );
+};
 
-  getTimeStamp(): PubDate {
-    const found = this.lines.filter((l) => l.indexOf('年') != -1);
-    const s = found.length ? found[0] : '';
-    return parsePubDate(s);
-  }
+export const getFiveCode = (): string => {
+  const line =
+    getMetaInfoLines()
+      .filter((l) => l.indexOf('ISBN') != -1)
+      .at(0) || '';
+  const pattern = '978-4-641-';
+  const offset = line.indexOf(pattern) + pattern.length;
+  return line.substring(offset, offset + 5);
+};
 
-  getPrice(): string {
-    const found = this.lines.filter((l) => String(l).indexOf('定価') != -1);
-    if (found.length) {
-      return found[0]
-        .replace(/定価.+本体/, '')
-        .replace(/円）/, '')
-        .trim();
-    }
-    return '';
-  }
+const getSeriesBase = (): string => {
+  const e = document.querySelector<HTMLElement>(
+    '#cont_box_right > div.cont_box_txt1_2 a'
+  );
+  if (!e) return '';
+  return e.innerText
+    .replace(/有斐閣/g, '')
+    .replace(/-/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/[\]］]$/g, '')
+    .replace(/[\[［]/g, '_');
+};
 
-  getFiveCode(): string {
-    const found = this.lines.filter((l) => String(l).indexOf('ISBN') != -1);
-    if (0 < found.length) {
-      return found[0].replace(/^.+(\d{5}).+$/, '$1');
-    }
-    return '';
-  }
-}
+export const getBookSeries = (): string => {
+  const s = getSeriesBase();
+  if (s == 'yknot') return '有斐閣' + s;
+  return s;
+};
 
-export class BookSeries {
-  private readonly base: string;
-  constructor(text: string) {
-    this.base = text
-      .replace(/有斐閣/g, '')
-      .replace(/-/g, '')
-      .replace(/\s+/g, '_')
-      .replace(/[\]］]$/g, '')
-      .replace(/[\[［]/g, '_');
-  }
+export const getBookSeriesForGenpon = (): string => {
+  const s = getBookSeries();
+  if (s.length < 1) return '';
+  const f = s.replace(/_/g, '').replace(/^有斐閣/, '');
+  if (f.length < 1) return '';
+  return `［${f}］`;
+};
 
-  format(): string {
-    const prefix = this.base == 'yknot' ? '有斐閣' : '';
-    return prefix + this.base;
-  }
-  forGenpon(): string {
-    const s = this.format();
-    if (s.length < 1) {
-      return '';
-    }
-    const f = s.replace(/_/g, '').replace(/^有斐閣/, '');
-    return 0 < f.length ? `［${f}］` : '';
-  }
-}
+export const getGenres = (): string[] => {
+  const elems = Array.from(
+    document.querySelectorAll<HTMLElement>('.txt12 h2 > a')
+  );
+  return elems
+    .map((elem) => {
+      return elem.innerText
+        .split('・')
+        .map((s) => s.trim().replace(/（.+?）/g, ''));
+    })
+    .flat()
+    .reduce((accum: string[], s: string) => {
+      if (accum.indexOf(s) == -1) {
+        accum.push(s);
+      }
+      return accum;
+    }, []);
+};

@@ -3,7 +3,7 @@
 import { RequestType, from5code } from './helper';
 import { FILLER } from './pageParser';
 
-const requestToActiveTab = (requestType: string) => {
+const requestToActiveTab = (requestType: RequestType) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab.id) {
@@ -23,21 +23,22 @@ const requestToActiveTab = (requestType: string) => {
   });
 };
 
-requestToActiveTab(RequestType.SlackSlashCommand);
-requestToActiveTab(RequestType.XPostContent);
-requestToActiveTab(RequestType.XThreadContent);
-requestToActiveTab(RequestType.XJuhanContent);
-requestToActiveTab(RequestType.MetaContent);
-requestToActiveTab(RequestType.ThreadsContent);
-requestToActiveTab(RequestType.Genpon);
-requestToActiveTab(RequestType.Hasso);
-requestToActiveTab(RequestType.GeneralInfo);
-requestToActiveTab(RequestType.MinimalInfo);
+requestToActiveTab('SlackSlashCommand');
+requestToActiveTab('XPostContent');
+requestToActiveTab('XTreeContent');
+requestToActiveTab('XJuhanContent');
+requestToActiveTab('MetaContent');
+requestToActiveTab('ThreadsContent');
+requestToActiveTab('Genpon');
+requestToActiveTab('Hasso');
+requestToActiveTab('GeneralInfo');
+requestToActiveTab('MinimalInfo');
 
-type Payload = {
-  type: string;
+export type Payload = {
+  type: RequestType;
   content: string;
   enabled: boolean;
+  params: string[];
 };
 
 const insertPreview = (payload: Payload) => {
@@ -107,9 +108,10 @@ chrome.runtime.onMessage.addListener((request) => {
     type: request.payload.type,
     content: request.payload.content,
     enabled: request.payload.enabled,
+    params: request.payload.params,
   };
 
-  if (payload.type === RequestType.SlackSlashCommand) {
+  if (payload.type === 'SlackSlashCommand') {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -121,10 +123,10 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === RequestType.XPostContent) {
+  if (payload.type === 'XPostContent') {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       payload.content
-    )}`;
+    )}#${payload.params[0]}`;
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       window.open(intent, '_blank');
@@ -133,20 +135,18 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === RequestType.XThreadContent) {
+  if (payload.type === 'XTreeContent') {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
-        const url =
-          'https://twitter.com/search?q=from%3Ayuhikaku_nibu&src=typed_query&f=live';
-        window.open(url, '_blank');
+        button!.classList.add('finished');
       });
     });
     insertPreview(payload);
     return;
   }
 
-  if (payload.type === RequestType.MetaContent) {
+  if (payload.type === 'MetaContent') {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -159,7 +159,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === RequestType.ThreadsContent) {
+  if (payload.type === 'ThreadsContent') {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {
       copyText(payload.content, () => {
@@ -172,7 +172,7 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === RequestType.XJuhanContent) {
+  if (payload.type === 'XJuhanContent') {
     const button = setupButton(payload);
     button!.setAttribute('content', payload.content);
     if (payload.enabled) {
@@ -190,10 +190,10 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   if (
-    payload.type === RequestType.Genpon ||
-    payload.type === RequestType.Hasso ||
-    payload.type === RequestType.GeneralInfo ||
-    payload.type === RequestType.MinimalInfo
+    payload.type === 'Genpon' ||
+    payload.type === 'Hasso' ||
+    payload.type === 'GeneralInfo' ||
+    payload.type === 'MinimalInfo'
   ) {
     const button = setupButton(payload);
     button!.addEventListener('click', () => {

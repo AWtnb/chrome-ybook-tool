@@ -3,11 +3,20 @@
  * https://geniusium.hatenablog.com/entry/2023/05/04/082017
  */
 'use strict';
-const TARGET = 'https://www.yuhikaku.co.jp/books/detail/';
 
-const updateConfig = (isTarget: boolean) => {
-  const popupPath = isTarget ? './popup.html' : 'justjump.html';
-  const iconPath = isTarget ? './icons/cremesoda_128.png' : './icons/cremesoda_128_gray.png';
+import { isYBookPageUrl, isXIntentUrl } from './helper';
+
+const updateConfig = (url: string) => {
+  const popupPath = (() => {
+    if (isYBookPageUrl(url)) return './popup.html';
+    if (isXIntentUrl(url)) return './xtree.html';
+    return 'justjump.html';
+  })();
+
+  const iconPath =
+    isYBookPageUrl(url) || isXIntentUrl(url)
+      ? './icons/cremesoda_128.png'
+      : './icons/cremesoda_128_gray.png';
   chrome.action.setPopup({ popup: popupPath }).then(() => {
     chrome.action.setIcon({ path: iconPath });
   });
@@ -18,7 +27,7 @@ chrome.tabs.onActivated.addListener((activeInfo: chrome.tabs.TabActiveInfo) => {
     if (!tab.url) {
       return;
     }
-    updateConfig(tab.url.startsWith(TARGET));
+    updateConfig(tab.url);
   });
 });
 
@@ -27,6 +36,6 @@ chrome.tabs.onUpdated.addListener(
     if (!tab.active || !change.url || !tab.url) {
       return;
     }
-    updateConfig(tab.url.startsWith(TARGET));
+    updateConfig(tab.url);
   }
 );
