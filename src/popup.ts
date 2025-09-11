@@ -119,7 +119,7 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   if (payload.type === 'x-post-content') {
-    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+    const intent = `https://x.com/intent/post?text=${encodeURIComponent(
       payload.content
     )}&isbn=${payload.params[0]}`;
     const button = setupButton(payload);
@@ -176,7 +176,7 @@ chrome.runtime.onMessage.addListener((request) => {
     button?.addEventListener('click', () => {
       const content = button?.getAttribute('content') || '';
       const count = String(button?.getAttribute('juhan-count') || 2);
-      const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      const intent = `https://x.com/intent/post?text=${encodeURIComponent(
         content.replace(FILLER, count)
       )}`;
       window.open(intent, '_blank');
