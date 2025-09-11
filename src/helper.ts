@@ -43,7 +43,7 @@ export const isXIntentUrl = (url: string): boolean => {
   return (
     u.host == 'x.com' &&
     u.pathname == '/intent/post' &&
-    !!u.searchParams.get('text') &&
-    !!u.searchParams.get('isbn')
+    u.searchParams.has('text') &&
+    u.searchParams.has('isbn')
   );
 };
