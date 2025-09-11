@@ -1,25 +1,20 @@
 'use strict';
 
-import { RequestType, from5code } from './helper';
+import { Payload, Message, MessageType, from5code } from './helper';
 import { FILLER } from './pageParser';
 
-const requestToActiveTab = (requestType: RequestType) => {
+const requestToActiveTab = (msgType: MessageType) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab.id) {
       return;
     }
-    chrome.tabs.sendMessage(
-      tab.id,
-      {
-        type: requestType,
-      },
-      () => {
-        if (chrome.runtime.lastError) {
-          console.log('something happened: ', chrome.runtime.lastError.message);
-        }
-      }
-    );
+    const m: Message = {
+      to: 'contentScript',
+      type: msgType,
+      payload: null,
+    };
+    chrome.tabs.sendMessage(tab.id, m);
   });
 };
 
@@ -34,15 +29,8 @@ requestToActiveTab('hasso');
 requestToActiveTab('general-info');
 requestToActiveTab('minimal-info');
 
-export type Payload = {
-  type: RequestType;
-  content: string;
-  enabled: boolean;
-  params: string[];
-};
-
-const insertPreview = (payload: Payload) => {
-  const elem = document.getElementById(payload.type);
+const insertPreview = (msgType: MessageType, payload: Payload) => {
+  const elem = document.getElementById(msgType);
   const pre = document.createElement('pre');
   pre.classList.add('preview');
   const c = document.createElement('code');
@@ -68,8 +56,11 @@ const copyText = (text: string, callback: copyFinishedCallback) => {
   });
 };
 
-const setupButton = (payload: Payload): HTMLElement | null => {
-  const b = document.getElementById(payload.type);
+const setupButton = (
+  msgType: MessageType,
+  payload: Payload
+): HTMLElement | null => {
+  const b = document.getElementById(msgType);
   if (!b) {
     return null;
   }
@@ -103,46 +94,49 @@ YCODE_INPUT.onkeydown = (ev: KeyboardEvent) => {
 
 document.getElementById('jump-button')?.addEventListener('click', jumpByCode);
 
-chrome.runtime.onMessage.addListener((request) => {
-  const payload: Payload = request.payload;
+chrome.runtime.onMessage.addListener((msg: Message) => {
+  if (msg.to !== 'popup' || !msg.payload) {
+    return;
+  }
+  const payload: Payload = msg.payload;
 
-  if (payload.type === 'slack-slash-command') {
-    const button = setupButton(payload);
+  if (msg.type === 'slack-slash-command') {
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url = 'https://digi-yuhi.slack.com/archives/C03HZP034P5';
         window.open(url, '_blank');
       });
     });
-    insertPreview(payload);
+    insertPreview(msg.type, payload);
     return;
   }
 
-  if (payload.type === 'x-post-content') {
+  if (msg.type === 'x-post-content') {
     const intent = `https://x.com/intent/post?text=${encodeURIComponent(
       payload.content
     )}&isbn=${payload.params[0]}`;
-    const button = setupButton(payload);
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       window.open(intent, '_blank');
     });
-    insertPreview(payload);
+    insertPreview(msg.type, payload);
     return;
   }
 
-  if (payload.type === 'x-tree-content') {
-    const button = setupButton(payload);
+  if (msg.type === 'x-tree-content') {
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         button?.classList.add('finished');
       });
     });
-    insertPreview(payload);
+    insertPreview(msg.type, payload);
     return;
   }
 
-  if (payload.type === 'meta-content') {
-    const button = setupButton(payload);
+  if (msg.type === 'meta-content') {
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url =
@@ -150,12 +144,12 @@ chrome.runtime.onMessage.addListener((request) => {
         window.open(url, '_blank');
       });
     });
-    insertPreview(payload);
+    insertPreview(msg.type, payload);
     return;
   }
 
-  if (payload.type === 'threads-content') {
-    const button = setupButton(payload);
+  if (msg.type === 'threads-content') {
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
@@ -167,8 +161,8 @@ chrome.runtime.onMessage.addListener((request) => {
     return;
   }
 
-  if (payload.type === 'x-juhan-content') {
-    const button = setupButton(payload);
+  if (msg.type === 'x-juhan-content') {
+    const button = setupButton(msg.type, payload);
     button?.setAttribute('content', payload.content);
     if (payload.enabled) {
       document.getElementById('juhan-count')!.removeAttribute('disabled');
@@ -185,12 +179,12 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   if (
-    payload.type === 'genpon' ||
-    payload.type === 'hasso' ||
-    payload.type === 'general-info' ||
-    payload.type === 'minimal-info'
+    msg.type === 'genpon' ||
+    msg.type === 'hasso' ||
+    msg.type === 'general-info' ||
+    msg.type === 'minimal-info'
   ) {
-    const button = setupButton(payload);
+    const button = setupButton(msg.type, payload);
     button?.addEventListener('click', () => {
       copyText(payload.content, () => {
         button?.classList.add('finished');

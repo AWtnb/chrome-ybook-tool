@@ -1,6 +1,6 @@
 'use strict';
 
-import { isXIntentUrl, isYBookPageUrl, RequestType } from './helper';
+import { broadcast, isXIntentUrl, isYBookPageUrl, MessageType } from './helper';
 import {
   FILLER,
   getAuthors,
@@ -15,7 +15,7 @@ import {
   getTimeStamp,
   getISBN,
 } from './pageParser';
-import { Payload } from './popup';
+import { Payload, Message } from './helper';
 
 const isYBookPage = (): boolean => {
   return isYBookPageUrl(document.location.href);
@@ -49,9 +49,11 @@ const getJuhanTweet = () => {
     /\s+/g,
     ' '
   );
-  return [bookLine, `第${FILLER}刷 #重版 しました！`, document.location.href].join(
-    '\n'
-  );
+  return [
+    bookLine,
+    `第${FILLER}刷 #重版 しました！`,
+    document.location.href,
+  ].join('\n');
 };
 
 const getFacebookThreadsPost = () => {
@@ -122,34 +124,32 @@ const getMinimalInfoToShare = (): string => {
   ].join(' ');
 };
 
-const replyToPopup = (payload: Payload) => {
-  chrome.runtime.sendMessage(
-    {
-      payload: payload,
-    },
-    () => {
-      if (chrome.runtime.lastError) {
-        console.log('something happened: ', chrome.runtime.lastError.message);
-      }
-    }
-  );
+const replyToPopup = (replyType: MessageType, payload: Payload) => {
+  const m: Message = {
+    to: 'popup',
+    type: replyType,
+    payload: payload,
+  };
+  broadcast(m);
 };
 
-chrome.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((msg: Message) => {
+  if (msg.to !== 'contentScript') {
+    return;
+  }
   const p: Payload = {
-    type: request.type,
     content: '',
     enabled: false,
     params: [],
   };
 
-  if (isXIntentPage() && p.type == 'x-tree-content') {
+  if (isXIntentPage() && msg.type == 'x-tree-content') {
     const u = new URL(document.location.href);
-    const isbn = u.searchParams.get("isbn");
+    const isbn = u.searchParams.get('isbn');
     if (isbn) {
       p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/books/detail/${isbn}`;
       p.enabled = true;
-      replyToPopup(p);
+      replyToPopup(msg.type, p);
     }
     return;
   }
@@ -159,59 +159,59 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   const ts = getTimeStamp();
-  if (p.type == 'slack-slash-command') {
+  if (msg.type == 'slack-slash-command') {
     p.content = `/hatsubai ${document.location.href}`;
     p.enabled = 0 < ts.D.length;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'x-post-content') {
+  if (msg.type == 'x-post-content') {
     p.content = getMainTweet();
     p.enabled = 0 < ts.D.length;
     p.params.push(getISBN());
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'meta-content') {
+  if (msg.type == 'meta-content') {
     p.content = getFacebookThreadsPost();
     p.enabled = 0 < ts.D.length;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'threads-content') {
+  if (msg.type == 'threads-content') {
     p.content = getFacebookThreadsPost();
     p.enabled = 0 < ts.D.length;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'x-juhan-content') {
+  if (msg.type == 'x-juhan-content') {
     p.content = getJuhanTweet();
     p.enabled = ts.D.length < 1;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'genpon') {
+  if (msg.type == 'genpon') {
     p.content = getGenponRecordLine();
     p.enabled = true;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'hasso') {
+  if (msg.type == 'hasso') {
     p.content = getHassoIraishoLine();
     p.enabled = true;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'general-info') {
+  if (msg.type == 'general-info') {
     p.content = getGeneralInfoToShare();
     p.enabled = true;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
-  if (p.type == 'minimal-info') {
+  if (msg.type == 'minimal-info') {
     p.content = getMinimalInfoToShare();
     p.enabled = true;
-    replyToPopup(p);
+    replyToPopup(msg.type, p);
     return;
   }
 });

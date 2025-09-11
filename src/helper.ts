@@ -1,4 +1,4 @@
-export type RequestType =
+export type MessageType =
   | 'slack-slash-command'
   | 'x-post-content'
   | 'x-tree-content'
@@ -10,6 +10,22 @@ export type RequestType =
   | 'general-info'
   | 'minimal-info'
   | '';
+
+export type Payload = {
+  content: string;
+  enabled: boolean;
+  params: string[];
+};
+
+export type Message = {
+  to: 'popup' | 'contentScript' | 'background';
+  type: MessageType;
+  payload: Payload | null;
+};
+
+export const broadcast = (m: Message) => {
+  chrome.runtime.sendMessage(m);
+};
 
 const getCheckDigit = (isbn: string): number => {
   const total = String(isbn)
