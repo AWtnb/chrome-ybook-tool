@@ -143,12 +143,14 @@ chrome.runtime.onMessage.addListener((request) => {
     params: [],
   };
 
-  if (isXIntentPage() && request.type == 'XTreeContent') {
+  if (isXIntentPage() && p.type == 'x-tree-content') {
     const u = new URL(document.location.href);
-    const isbn = u.hash.substring(1);
-    p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/books/detail/${isbn}`;
-    p.enabled = true;
-    replyToPopup(p);
+    const isbn = u.searchParams.get("isbn");
+    if (isbn) {
+      p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/books/detail/${isbn}`;
+      p.enabled = true;
+      replyToPopup(p);
+    }
     return;
   }
 
@@ -157,56 +159,56 @@ chrome.runtime.onMessage.addListener((request) => {
   }
 
   const ts = getTimeStamp();
-  if (request.type == 'SlackSlashCommand') {
+  if (p.type == 'slack-slash-command') {
     p.content = `/hatsubai ${document.location.href}`;
     p.enabled = 0 < ts.D.length;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'XPostContent') {
+  if (p.type == 'x-post-content') {
     p.content = getMainTweet();
     p.enabled = 0 < ts.D.length;
     p.params.push(getISBN());
     replyToPopup(p);
     return;
   }
-  if (request.type == 'MetaContent') {
+  if (p.type == 'meta-content') {
     p.content = getFacebookThreadsPost();
     p.enabled = 0 < ts.D.length;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'ThreadsContent') {
+  if (p.type == 'threads-content') {
     p.content = getFacebookThreadsPost();
     p.enabled = 0 < ts.D.length;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'XJuhanContent') {
+  if (p.type == 'x-juhan-content') {
     p.content = getJuhanTweet();
     p.enabled = ts.D.length < 1;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'Genpon') {
+  if (p.type == 'genpon') {
     p.content = getGenponRecordLine();
     p.enabled = true;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'Hasso') {
+  if (p.type == 'hasso') {
     p.content = getHassoIraishoLine();
     p.enabled = true;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'GeneralInfo') {
+  if (p.type == 'general-info') {
     p.content = getGeneralInfoToShare();
     p.enabled = true;
     replyToPopup(p);
     return;
   }
-  if (request.type == 'MinimalInfo') {
+  if (p.type == 'minimal-info') {
     p.content = getMinimalInfoToShare();
     p.enabled = true;
     replyToPopup(p);

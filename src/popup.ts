@@ -121,7 +121,7 @@ chrome.runtime.onMessage.addListener((request) => {
   if (payload.type === 'x-post-content') {
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       payload.content
-    )}#${payload.params[0]}`;
+    )}&isbn=${payload.params[0]}`;
     const button = setupButton(payload);
     button?.addEventListener('click', () => {
       window.open(intent, '_blank');
