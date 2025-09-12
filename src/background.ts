@@ -4,7 +4,13 @@
  */
 'use strict';
 
-import { isYBookPageUrl, isXIntentUrl } from './helper';
+import {
+  isYBookPageUrl,
+  isXIntentUrl,
+  Message,
+  broadcast,
+  Payload,
+} from './helper';
 
 const updateConfig = (url: string) => {
   const popupPath = (() => {
@@ -39,3 +45,49 @@ chrome.tabs.onUpdated.addListener(
     updateConfig(tab.url);
   }
 );
+
+chrome.runtime.onMessage.addListener((msg: Message, _, sendResponse) => {
+  if (msg.to !== 'background' || !msg.payload) {
+    return;
+  }
+  // https://blog.freks.jp/gas-post-trouble-shooting/
+  const gasUrl = '';
+  const url = gasUrl + '?event=' + msg.payload.content;
+
+  const m: Message = {
+    to: 'popup',
+    type: 'finished-sheet-register',
+    payload: null,
+  };
+  fetch(url, {
+    method: 'GET',
+    mode: 'cors',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          'Failed to contact with Google Apps Script: ' + response.status
+        );
+      }
+    })
+    .then(() => {
+      const p: Payload = {
+        content: 'ok',
+        enabled: false,
+        params: [],
+      };
+      m.payload = p;
+      broadcast(m);
+    })
+    .catch(() => {
+      const p: Payload = {
+        content: 'fail',
+        enabled: false,
+        params: [],
+      };
+      m.payload = p;
+      broadcast(m);
+    });
+
+  return true;
+});

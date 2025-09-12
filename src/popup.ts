@@ -1,6 +1,6 @@
 'use strict';
 
-import { Payload, Message, MessageType, from5code } from './helper';
+import { Payload, Message, MessageType, from5code, broadcast } from './helper';
 import { FILLER } from './pageParser';
 
 const requestToActiveTab = (msgType: MessageType) => {
@@ -18,7 +18,7 @@ const requestToActiveTab = (msgType: MessageType) => {
   });
 };
 
-requestToActiveTab('slack-slash-command');
+requestToActiveTab('sheet-register');
 requestToActiveTab('x-post-content');
 requestToActiveTab('x-tree-content');
 requestToActiveTab('x-juhan-content');
@@ -100,15 +100,23 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
   }
   const payload: Payload = msg.payload;
 
-  if (msg.type === 'slack-slash-command') {
+  if (msg.type === 'sheet-register') {
     const button = setupButton(msg.type, payload);
-    button?.addEventListener('click', () => {
-      copyText(payload.content, () => {
-        const url = 'https://digi-yuhi.slack.com/archives/C03HZP034P5';
-        window.open(url, '_blank');
-      });
+    button!.classList.remove('finished');
+    button!.addEventListener('click', () => {
+      button!.setAttribute('disabled', 'true');
+      broadcast({ to: 'background', type: msg.type, payload: payload });
     });
-    insertPreview(msg.type, payload);
+    return;
+  }
+
+  if (msg.type === 'finished-sheet-register') {
+    const button = document.getElementById('sheet-register');
+    if (payload.content == 'ok') {
+      button!.classList.add('finished');
+    } else {
+      button!.removeAttribute('disabled');
+    }
     return;
   }
 

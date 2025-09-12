@@ -159,8 +159,8 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
   }
 
   const ts = getTimeStamp();
-  if (msg.type == 'slack-slash-command') {
-    p.content = `/hatsubai ${document.location.href}`;
+  if (msg.type == 'sheet-register') {
+    p.content = document.location.href;
     p.enabled = 0 < ts.D.length;
     replyToPopup(msg.type, p);
     return;

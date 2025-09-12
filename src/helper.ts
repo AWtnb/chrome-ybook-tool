@@ -1,5 +1,6 @@
 export type MessageType =
-  | 'slack-slash-command'
+  | 'sheet-register'
+  | 'finished-sheet-register'
   | 'x-post-content'
   | 'x-tree-content'
   | 'x-juhan-content'
