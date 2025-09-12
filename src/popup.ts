@@ -116,6 +116,9 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
       button!.classList.add('finished');
     } else {
       button!.removeAttribute('disabled');
+      if (payload.content == "error") {
+        alert("No URL is specified!")
+      }
     }
     return;
   }

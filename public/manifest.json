@@ -16,8 +16,8 @@
     "default_title": "Chrome Ybook Tool",
     "default_popup": "popup.html"
   },
-  "permissions": ["activeTab", "tabs", "clipboardWrite"],
-
+  "permissions": ["activeTab", "tabs", "clipboardWrite", "storage"],
+  "options_page": "settings.html",
   "commands": {
     "_execute_action": {
       "description": "open popup",

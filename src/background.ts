@@ -9,7 +9,6 @@ import {
   isXIntentUrl,
   Message,
   broadcast,
-  Payload,
 } from './helper';
 
 const updateConfig = (url: string) => {
@@ -46,19 +45,38 @@ chrome.tabs.onUpdated.addListener(
   }
 );
 
-chrome.runtime.onMessage.addListener((msg: Message, _, sendResponse) => {
+const getUrlToGET = (): Promise<string> => {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get('gasUrl', (result) => {
+      resolve(result.gasUrl || '');
+    });
+  });
+};
+
+chrome.runtime.onMessage.addListener(async (msg: Message) => {
   if (msg.to !== 'background' || !msg.payload) {
     return;
   }
-  // https://blog.freks.jp/gas-post-trouble-shooting/
-  const gasUrl = '';
-  const url = gasUrl + '?event=' + msg.payload.content;
-
   const m: Message = {
     to: 'popup',
     type: 'finished-sheet-register',
     payload: null,
   };
+
+  const gasUrl = await getUrlToGET();
+  if (!gasUrl) {
+    m.payload = {
+      content: 'error',
+      enabled: false,
+      params: [],
+    };
+    broadcast(m);
+    return;
+  }
+
+  const url = gasUrl + '?event=' + msg.payload.content;
+
+  // https://blog.freks.jp/gas-post-trouble-shooting/
   fetch(url, {
     method: 'GET',
     mode: 'cors',
@@ -71,21 +89,19 @@ chrome.runtime.onMessage.addListener((msg: Message, _, sendResponse) => {
       }
     })
     .then(() => {
-      const p: Payload = {
+      m.payload = {
         content: 'ok',
         enabled: false,
         params: [],
       };
-      m.payload = p;
       broadcast(m);
     })
     .catch(() => {
-      const p: Payload = {
+      m.payload = {
         content: 'fail',
         enabled: false,
         params: [],
       };
-      m.payload = p;
       broadcast(m);
     });
 
