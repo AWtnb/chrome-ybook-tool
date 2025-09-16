@@ -26,12 +26,8 @@ const getBookTitleInfo = (target: 'main' | 'sub' | 'rev'): string => {
   );
 };
 
-const getBookPageBookTitleRev = (): string => {
-  return getBookTitleInfo('rev');
-};
-
 export const getBookTitle = (): string => {
-  return getBookTitleInfo('main') + getBookPageBookTitleRev();
+  return (getBookTitleInfo('main') + ' ' + getBookTitleInfo('rev')).trim();
 };
 
 export const getBookSubTitle = (): string => {
@@ -39,7 +35,7 @@ export const getBookSubTitle = (): string => {
 };
 
 export const getBookRevisionType = (): string => {
-  if (0 < getBookPageBookTitleRev().length) {
+  if (0 < getBookTitleInfo('rev').length) {
     return '改訂版';
   }
   return '新刊';
