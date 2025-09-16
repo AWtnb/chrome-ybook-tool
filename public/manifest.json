@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chrome Ybook Tool",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Get book information from page",
   "icons": {
     "16": "icons/cremesoda_16.png",

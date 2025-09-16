@@ -1,12 +1,27 @@
 'use strict';
 
-import { Payload, Message, MessageType, from5code, broadcast } from './helper';
+import {
+  Payload,
+  Message,
+  MessageType,
+  from5code,
+  broadcast,
+  isYBookPageUrl,
+  isXIntentUrl,
+} from './helper';
 import { FILLER } from './pageParser';
 
 const requestToActiveTab = (msgType: MessageType) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab.id) {
+      return;
+    }
+    const u = tab.url;
+    if (!u) {
+      return;
+    }
+    if (!isYBookPageUrl(u) && !isXIntentUrl(u)) {
       return;
     }
     const m: Message = {
@@ -116,8 +131,8 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
       button!.classList.add('finished');
     } else {
       button!.removeAttribute('disabled');
-      if (payload.content == "error") {
-        alert("No URL is specified!")
+      if (payload.content == 'error') {
+        alert('No URL is specified!');
       }
     }
     return;

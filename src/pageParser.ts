@@ -121,31 +121,31 @@ export const getFiveCode = (): string => {
   return line.substring(offset, offset + 5);
 };
 
-const getSeriesBase = (): string => {
+export const getBookSeries = (): string => {
   const e = document.querySelector<HTMLElement>(
     '#cont_box_right > div.cont_box_txt1_2 a'
   );
   if (!e) return '';
-  return e.innerText
-    .replace(/有斐閣/g, '')
-    .replace(/-/g, '')
-    .replace(/\s+/g, '_')
-    .replace(/[\]］]$/g, '')
-    .replace(/[\[［]/g, '_');
-};
-
-export const getBookSeries = (): string => {
-  const s = getSeriesBase();
-  if (s == 'yknot') return '有斐閣' + s;
-  return s;
+  const s = e.innerText;
+  if (s === '有斐閣ストゥディア') return 'ストゥディア';
+  if (s === 'y-knot') return '有斐閣yknot';
+  if (s === '有斐閣アルマ') return 'アルマ';
+  if (s === 'テキストブックス［つかむ］') return 'つかむ';
+  if (s === 'New Liberal Arts Selection') return 'NewLiberalArtsSelection';
+  if (s === '有斐閣ブックス') return 'ブックス';
+  if (s === '有斐閣Ｓシリーズ') return 'Sシリーズ';
+  if (s === '有斐閣コンパクト') return 'コンパクト';
+  if (s === '有斐閣選書') return '選書';
+  if (s === '有斐閣双書') return '双書';
+  if (s === '有斐閣双書キーワード') return '双書キーワード';
+  if (s === '有斐閣Insight') return 'インサイト';
+  return '';
 };
 
 export const getBookSeriesForGenpon = (): string => {
   const s = getBookSeries();
   if (s.length < 1) return '';
-  const f = s.replace(/_/g, '').replace(/^有斐閣/, '');
-  if (f.length < 1) return '';
-  return `［${f}］`;
+  return `［${s.replace(/^有斐閣/, '')}］`;
 };
 
 export const getGenres = (): string[] => {

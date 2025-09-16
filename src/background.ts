@@ -4,12 +4,7 @@
  */
 'use strict';
 
-import {
-  isYBookPageUrl,
-  isXIntentUrl,
-  Message,
-  broadcast,
-} from './helper';
+import { isYBookPageUrl, isXIntentUrl, Message, broadcast } from './helper';
 
 const updateConfig = (url: string) => {
   const popupPath = (() => {
