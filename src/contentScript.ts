@@ -45,7 +45,7 @@ const getMainTweet = (): string => {
 };
 
 const getJuhanTweet = () => {
-  const bookLine = `#有斐閣 ${getBookSeries()} ${getBookMinimalInfo()}`.replace(
+  const bookLine = `#有斐閣 #${getBookSeries()} ${getBookMinimalInfo()}`.replace(
     /\s+/g,
     ' '
   );
