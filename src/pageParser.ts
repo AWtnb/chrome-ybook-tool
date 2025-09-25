@@ -95,9 +95,13 @@ type PubDate = {
 export const getTimeStamp = (): PubDate => {
   const lines = getMetaInfoLines();
   const line = lines.filter((l) => l.indexOf('年') != -1).at(0) || '';
-  const ss = line.replace(/.発売/, '').split(/[年月]/);
+  const ss = line
+    .replace(/.発売/, '')
+    .split(/[年月]/)
+    .map((s) => String(Number(s)));
+  const m = 1 < ss.length ? ss[1] : '';
   const d = 2 < ss.length ? ss[2] : '';
-  return { Y: ss[0], M: String(Number(ss[1])), D: d };
+  return { Y: ss[0], M: m, D: d };
 };
 
 export const getPrice = (): string => {
