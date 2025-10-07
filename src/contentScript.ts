@@ -45,12 +45,12 @@ const getMainTweet = (): string => {
 };
 
 const getJuhanTweet = () => {
-  const bookLine = `#有斐閣 #${getBookSeries()} ${getBookMinimalInfo()}`.replace(
-    /\s+/g,
-    ' '
-  );
+  const tagsLine = ['有斐閣', getBookSeries()]
+    .filter((s) => 0 < s.length)
+    .map((s) => '#' + s)
+    .join(' ');
   return [
-    bookLine,
+    `${tagsLine} ${getBookMinimalInfo()}`.replace(/\s+/g, ' '),
     `第${FILLER}刷 #重版 しました！`,
     document.location.href,
   ].join('\n');

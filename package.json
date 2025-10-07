@@ -1,6 +1,6 @@
 {
   "name": "chrome-ybook-tool",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Chrome YBook Tool",
   "private": true,
   "scripts": {
