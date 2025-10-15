@@ -61,7 +61,7 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
   const gasUrl = await getUrlToGET();
   if (!gasUrl) {
     m.payload = {
-      content: 'error',
+      content: 'ERROR: No url to GET is specified!',
       enabled: false,
       params: [],
     };
@@ -69,7 +69,13 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
     return;
   }
 
-  const url = gasUrl + '?event=' + msg.payload.content;
+  const url = new URL(gasUrl);
+  const urlParams = new URLSearchParams();
+  urlParams.set('page', msg.payload.content);
+  ['y', 'm', 'd', 'title', 'author', 'detail'].forEach((p, i) => {
+    urlParams.set(p, msg.payload!.params[i]);
+  });
+  url.search = urlParams.toString();
 
   // https://blog.freks.jp/gas-post-trouble-shooting/
   fetch(url, {
@@ -79,7 +85,7 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
     .then((response) => {
       if (!response.ok) {
         throw new Error(
-          'Failed to contact with Google Apps Script: ' + response.status
+          'ERROR: Failed to contact with Google Apps Script: ' + response.status
         );
       }
     })
@@ -91,9 +97,10 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
       };
       broadcast(m);
     })
-    .catch(() => {
+    .catch((err: unknown) => {
+      const e = err instanceof Error ? err : new Error(String(err));
       m.payload = {
-        content: 'fail',
+        content: e.message,
         enabled: false,
         params: [],
       };

@@ -3,7 +3,7 @@
 import { broadcast, isXIntentUrl, isYBookPageUrl, MessageType } from './helper';
 import {
   FILLER,
-  getAuthors,
+  getAuthorsForGenpon,
   getAuthorsLine,
   getBookTitle,
   getBookRevisionType,
@@ -93,7 +93,7 @@ const getGenponRecordLine = (): string => {
     `（${getGenres().join('・')}）`,
     getBookTitle(),
     getBookSeriesForGenpon(),
-    getAuthors().join('・'),
+    getAuthorsForGenpon().join('・'),
     `${ts.Y}.${ts.M}.${ts.D}`,
   ].join('\t');
 };
@@ -102,6 +102,15 @@ const getHassoIraishoLine = (): string => {
   const ts = getTimeStamp();
   return [getFiveCode(), `${ts.Y}年${ts.M}月`, getBookTitle(), getPrice()].join(
     '\t'
+  );
+};
+
+const getContentDetail = (): string => {
+  return (
+    document
+      .getElementById('cont_box_m30')
+      ?.textContent.replace(/，/g, '、')
+      .trim() || ''
   );
 };
 
@@ -162,6 +171,12 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
   if (msg.type == 'sheet-register') {
     p.content = document.location.href;
     p.enabled = 0 < ts.D.length;
+    p.params.push(ts.Y);
+    p.params.push(ts.M);
+    p.params.push(ts.D);
+    p.params.push(getBookTitle());
+    p.params.push(getAuthorsLine());
+    p.params.push(getContentDetail());
     replyToPopup(msg.type, p);
     return;
   }

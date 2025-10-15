@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.sync.get('gasUrl', (data) => {
     if (data.gasUrl) {
       t.value = data.gasUrl;
+      t.select();
     }
   });
 });

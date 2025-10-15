@@ -41,7 +41,7 @@ export const getBookRevisionType = (): string => {
   return '新刊';
 };
 
-export const getAuthors = (): string[] => {
+export const getAuthorsForGenpon = (): string[] => {
   return Array.from(
     document.querySelectorAll<HTMLElement>('#cont_box_txt1 > h2 a')
   ).map((el) => {

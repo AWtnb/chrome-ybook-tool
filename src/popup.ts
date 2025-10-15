@@ -71,14 +71,8 @@ const copyText = (text: string, callback: copyFinishedCallback) => {
   });
 };
 
-const setupButton = (
-  msgType: MessageType,
-  payload: Payload
-): HTMLElement | null => {
-  const b = document.getElementById(msgType);
-  if (!b) {
-    return null;
-  }
+const setupButton = (msgType: MessageType, payload: Payload): HTMLElement => {
+  const b = document.getElementById(msgType)!;
   if (payload.enabled) {
     b.removeAttribute('disabled');
   }
@@ -117,23 +111,21 @@ chrome.runtime.onMessage.addListener((msg: Message) => {
 
   if (msg.type === 'sheet-register') {
     const button = setupButton(msg.type, payload);
-    button!.classList.remove('finished');
-    button!.addEventListener('click', () => {
-      button!.setAttribute('disabled', 'true');
+    button.classList.remove('finished');
+    button.addEventListener('click', () => {
+      button.setAttribute('disabled', 'true');
       broadcast({ to: 'background', type: msg.type, payload: payload });
     });
     return;
   }
 
   if (msg.type === 'finished-sheet-register') {
-    const button = document.getElementById('sheet-register');
+    const button = document.getElementById('sheet-register')!;
     if (payload.content == 'ok') {
-      button!.classList.add('finished');
+      button.classList.add('finished');
     } else {
-      button!.removeAttribute('disabled');
-      if (payload.content == 'error') {
-        alert('No URL is specified!');
-      }
+      button.removeAttribute('disabled');
+      alert(payload.content);
     }
     return;
   }
