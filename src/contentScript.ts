@@ -107,9 +107,7 @@ const getHassoIraishoLine = (): string => {
 
 const getContentDetail = (): string => {
   return (
-    (document.getElementById('cont_box_m30')?.textContent || '')
-      .replace(/，/g, '、')
-      .trim() || ''
+    (document.getElementById('cont_box_m30')?.textContent || '').trim() || ''
   );
 };
 
