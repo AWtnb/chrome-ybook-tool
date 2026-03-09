@@ -79,7 +79,7 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
   url.search = urlParams.toString();
 
   // https://blog.freks.jp/gas-post-trouble-shooting/
-  fetch(url, {
+  fetch(url.toString(), {
     method: 'GET',
     mode: 'cors',
   })
