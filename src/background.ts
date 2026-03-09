@@ -61,7 +61,8 @@ chrome.runtime.onMessage.addListener(async (msg: Message) => {
   const gasUrl = await getUrlToGET();
   if (!gasUrl) {
     m.payload = {
-      content: 'ERROR: No url to GET is specified!',
+      content:
+        'エラー！ Googleスプレッドシートに記録するためのURLが未設定です。アイコンを右クリックして「オプション」から設定してください。',
       enabled: false,
       params: [],
     };
