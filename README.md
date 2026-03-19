@@ -2,6 +2,8 @@
 
 書誌情報の取得用拡張機能
 
+- [Google Apps Script との連携方法](./doc/README.md)
+
 ---
 
 This project was bootstrapped with [Chrome Extension CLI](https://github.com/dutiyesh/chrome-extension-cli)
