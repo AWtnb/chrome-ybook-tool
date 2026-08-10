@@ -4,7 +4,6 @@ import {
   Payload,
   Message,
   MessageType,
-  from5code,
   broadcast,
   isYBookPageUrl,
   isXIntentUrl,
@@ -85,23 +84,6 @@ document
     const v = (event.target as HTMLInputElement).value;
     document.getElementById('x-juhan-content')!.setAttribute('juhan-count', v);
   });
-
-const YCODE_INPUT = document.getElementById('ybook-code') as HTMLInputElement;
-YCODE_INPUT.focus();
-
-const jumpByCode = () => {
-  const url = `https://www.yuhikaku.co.jp/books/detail/${from5code(
-    YCODE_INPUT.value
-  )}`;
-  window.open(url, '_blank');
-};
-YCODE_INPUT.onkeydown = (ev: KeyboardEvent) => {
-  if (ev.key == 'Enter') {
-    jumpByCode();
-  }
-};
-
-document.getElementById('jump-button')?.addEventListener('click', jumpByCode);
 
 chrome.runtime.onMessage.addListener((msg: Message) => {
   if (msg.to !== 'popup' || !msg.payload) {

@@ -43,16 +43,9 @@ const getCheckDigit = (isbn: string): number => {
   return (10 - (total % 10)) % 10;
 };
 
-export const from5code = (code: string): string => {
-  const isbn12 = `9784641${code}`;
-  return `${isbn12}${getCheckDigit(isbn12)}`;
-};
-
 export const isYBookPageUrl = (url: string): boolean => {
   const u = new URL(url);
-  return (
-    u.host == 'www.yuhikaku.co.jp' && u.pathname.startsWith('/books/detail/')
-  );
+  return u.host == 'www.yuhikaku.co.jp' && u.pathname.startsWith('/book/');
 };
 
 export const isXIntentUrl = (url: string): boolean => {

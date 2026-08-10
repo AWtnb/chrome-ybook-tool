@@ -8,9 +8,8 @@ import { isYBookPageUrl, isXIntentUrl, Message, broadcast } from './helper';
 
 const updateConfig = (url: string) => {
   const popupPath = (() => {
-    if (isYBookPageUrl(url)) return './popup.html';
     if (isXIntentUrl(url)) return './xtree.html';
-    return 'justjump.html';
+    return './popup.html';
   })();
 
   const iconPath =
