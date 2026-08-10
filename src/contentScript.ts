@@ -3,7 +3,7 @@
 import { broadcast, isXIntentUrl, isYBookPageUrl, MessageType } from './helper';
 import {
   FILLER,
-  getAuthorsForGenpon,
+  getAuthors,
   getAuthorsLine,
   getBookTitle,
   getBookRevisionType,
@@ -93,7 +93,9 @@ const getGenponRecordLine = (): string => {
     `（${getGenres().join('・')}）`,
     getBookTitle(),
     getBookSeriesForGenpon(),
-    getAuthorsForGenpon().join('・'),
+    getAuthors()
+      .map((a) => a.name)
+      .join('・'),
     `${ts.Y}.${ts.M}.${ts.D}`,
   ].join('\t');
 };

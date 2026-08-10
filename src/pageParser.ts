@@ -1,29 +1,57 @@
 export const FILLER: string = '〓';
 
 export const getISBN = (): string => {
-  const u = new URL(document.location.href);
-  const s = u.pathname.split('/').at(-1);
-  if (s && s.startsWith('9784641') && s.length == 13) {
-    return s;
+  const elem = document.querySelector(
+    '#main div.data > table > tbody > tr:nth-child(4) > td'
+  );
+  if (elem) {
+    return elem.textContent.trim();
+  }
+  return '';
+};
+
+const getFirstText = (element: Element): string => {
+  for (const node of element.childNodes) {
+    if (3 === node.nodeType) {
+      return node.textContent ?? '';
+    }
+    if (1 === node.nodeType) {
+      break;
+    }
+  }
+  return '';
+};
+
+const getTitle = (s: string): string => {
+  const elems = s.trim().split(/\s+/);
+  elems.pop();
+  return elems.join(' ');
+};
+
+const getRevision = (s: string): string => {
+  const lastElem = s.trim().split(/\s+/).pop()!;
+  if (lastElem.indexOf('版') !== -1) {
+    return lastElem;
   }
   return '';
 };
 
 const getBookTitleInfo = (target: 'main' | 'sub' | 'rev'): string => {
-  const elems = Array.from(
-    document.querySelectorAll<HTMLElement>('#cont_box_title2_1 > h1 > span')
+  const pageTitleContainer = document.querySelector(
+    '#page > div.contents-wrapper > div.page-title.article'
+  )!;
+  const titleWithRev = getFirstText(
+    pageTitleContainer.querySelector('h1 > span')!
   );
-  const clsName = (() => {
-    if (target == 'main') return 'goods_goods_name';
-    if (target == 'sub') return 'goods_subtitle_last_name';
-    return 'goods_last_version';
-  })();
-  return (
-    elems
-      .filter((el) => el.classList.contains(clsName))
-      .at(0)
-      ?.innerText?.trim() || ''
-  );
+  if (target === 'main') {
+    return getTitle(titleWithRev);
+  }
+  if (target === 'sub') {
+    const subtitleElem = pageTitleContainer.querySelector('p.subname');
+    if (!subtitleElem) return '';
+    return subtitleElem.textContent.trim();
+  }
+  return getRevision(titleWithRev);
 };
 
 export const getBookTitle = (): string => {
@@ -31,7 +59,7 @@ export const getBookTitle = (): string => {
 };
 
 export const getBookSubTitle = (): string => {
-  return getBookTitleInfo('sub').replace(' -- ', '');
+  return getBookTitleInfo('sub');
 };
 
 export const getBookRevisionType = (): string => {
@@ -41,49 +69,37 @@ export const getBookRevisionType = (): string => {
   return '新刊';
 };
 
-export const getAuthorsForGenpon = (): string[] => {
+type Author = { name: string; label: string };
+
+export const getAuthors = (): Author[] => {
   return Array.from(
-    document.querySelectorAll<HTMLElement>('#cont_box_txt1 > h2 a')
+    document.querySelectorAll('div.book-info > div.author a')
   ).map((el) => {
-    return el.innerText.replace(/\s/g, '');
+    const t = el.textContent.replace(/\s/g, '');
+    const name = t.replace(/（.+）$/, '');
+    const label = el.nextElementSibling?.textContent?.trim() ?? '';
+    return {
+      name: name,
+      label: label,
+    };
   });
 };
 
 export const getAuthorsLine = (): string => {
-  const stack: string[] = [];
-  Array.from(
-    document.querySelectorAll<HTMLElement>('#cont_box_txt1 > h2 a')
-  ).map((el) => {
-    const name = el.innerText.replace(/\s/g, '');
-    stack.push(name);
-    const next = el.nextSibling;
-    if (!next) return;
-    if (next.nodeName !== '#text') return;
-    const nv = next.nodeValue;
-    if (!nv) return;
-    const i = nv.lastIndexOf('／');
-    if (i == -1) return;
-    stack.push(nv.substring(i));
-  });
-  return stack
-    .reduce((accum: string, s: string) => {
-      if (s.startsWith('／')) {
-        accum += s;
-        accum += '，';
-        return accum;
-      }
-      if (accum && !accum.endsWith('，')) {
-        accum += '・';
-      }
-      accum += s;
-      return accum;
-    }, '')
-    .replace(/，$/, '');
-};
+  const map = new Map<string, string[]>();
+  const authors = getAuthors();
+  for (const author of authors) {
+    const list = map.get(author.label);
+    if (list) {
+      list.push(author.name);
+      continue;
+    }
+    map.set(author.label, [author.name]);
+  }
 
-const getMetaInfoLines = (): string[] => {
-  const elem = document.querySelector<HTMLElement>('#cont_box_txt1 > span');
-  return elem?.innerText?.split(/[\r\n]+/) || [];
+  return Array.from(map.values())
+    .map((names) => names.join('・'))
+    .join('，');
 };
 
 type PubDate = {
@@ -93,44 +109,35 @@ type PubDate = {
 };
 
 export const getTimeStamp = (): PubDate => {
-  const lines = getMetaInfoLines();
-  const line = lines.filter((l) => l.indexOf('年') != -1).at(0) || '';
-  const ss = line
-    .replace(/.発売/, '')
-    .split(/[年月]/)
-    .map((s) => String(Number(s)));
-  const m = 1 < ss.length ? ss[1] : '';
-  const d = 2 < ss.length ? ss[2] : '';
-  return { Y: ss[0], M: m, D: d };
+  const timestamp = document
+    .querySelector(
+      '#main > div > div.data > table > tbody > tr:nth-child(3) > td'
+    )!
+    .textContent.trim();
+  const [y, m, d, _] = timestamp.split(/[年月日]/);
+  return { Y: y, M: m, D: d };
+};
+
+export const isBeforeSale = (): boolean => {
+  const elem = document.querySelector('#main > div > div.price > div.stock');
+  return elem?.textContent.trim() === '刊行予定';
 };
 
 export const getPrice = (): string => {
-  return (
-    getMetaInfoLines()
-      .filter((l) => l.indexOf('定価') != -1)
-      .at(0)
-      ?.replace(/定価.+本体/, '')
-      .replace(/円）/, '')
-      .trim() || ''
-  );
+  const base = document.querySelector(
+    '#main div.price > span:nth-child(2)'
+  )!.textContent;
+  return base.replace(/^[^0-9]+/, '').replace(/円.+$/, '円');
 };
 
 export const getFiveCode = (): string => {
-  const line =
-    getMetaInfoLines()
-      .filter((l) => l.indexOf('ISBN') != -1)
-      .at(0) || '';
-  const pattern = '978-4-641-';
-  const offset = line.indexOf(pattern) + pattern.length;
-  return line.substring(offset, offset + 5);
+  return getISBN().substring(7).substring(0, 5);
 };
 
 export const getBookSeries = (): string => {
-  const e = document.querySelector<HTMLElement>(
-    '#cont_box_right > div.cont_box_txt1_2 a'
-  );
-  if (!e) return '';
-  const s = e.innerText;
+  const s = document
+    .querySelector('#main div.data > table > tbody > tr:nth-child(2) > td')!
+    .textContent.trim();
   if (s === '有斐閣ストゥディア') return 'ストゥディア';
   if (s === 'y-knot') return '有斐閣yknot';
   if (s === '有斐閣アルマ') return 'アルマ';
@@ -153,20 +160,16 @@ export const getBookSeriesForGenpon = (): string => {
 };
 
 export const getGenres = (): string[] => {
-  const elems = Array.from(
-    document.querySelectorAll<HTMLElement>('.txt12 h2 > a')
-  );
-  return elems
-    .map((elem) => {
-      return elem.innerText
-        .split('・')
-        .map((s) => s.trim().replace(/（.+?）/g, ''));
-    })
-    .flat()
-    .reduce((accum: string[], s: string) => {
-      if (accum.indexOf(s) == -1) {
-        accum.push(s);
-      }
-      return accum;
-    }, []);
+  const genres: string[] = [];
+  Array.from(
+    document.querySelectorAll(
+      '#main div.data > table > tbody > tr:nth-child(1) > td a'
+    )
+  )
+    .map((el) => el.textContent.trim())
+    .filter((t) => t.trim().startsWith('●'))
+    .forEach((t) => {
+      t.split(/[\s・]/).forEach((s) => genres.push(s.trim()));
+    });
+  return genres;
 };
