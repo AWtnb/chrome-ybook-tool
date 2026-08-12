@@ -1,0 +1,42 @@
+.app {
+  width: 450px;
+  padding: 6px;
+}
+
+.box {
+  padding-top: 4px;
+  padding-bottom: 12px;
+}
+
+.juhan {
+  display: flex;
+}
+
+.juhan input[type="number"] {
+  width: 100px;
+  margin-right: 8px;
+}
+
+pre {
+  margin: 0;
+  line-height: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-break: break-all;
+  max-height: 80px;
+}
+
+button {
+  display: block;
+}
+
+button.finished::after {
+  content: "\2705";
+}
+
+#info-copy {
+  display: flex;
+}
+#info-copy .box {
+  margin-right: 10px;
+}

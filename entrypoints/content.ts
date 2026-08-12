@@ -19,6 +19,7 @@ import {
   getPrice,
   getTimeStamp,
   getISBN,
+  isBeforeSale,
 } from "../utils/pageParser";
 
 import { Payload, Message } from "../utils/helper";
@@ -184,7 +185,7 @@ export default defineContentScript({
       const ts = getTimeStamp();
       if (msg.type == "sheet-register") {
         p.content = document.location.href;
-        p.enabled = 0 < ts.D.length;
+        p.enabled = isBeforeSale();
         p.params.push(ts.Y);
         p.params.push(ts.M);
         p.params.push(ts.D);
@@ -196,20 +197,20 @@ export default defineContentScript({
       }
       if (msg.type == "x-post-content") {
         p.content = getMainTweet();
-        p.enabled = 0 < ts.D.length;
+        p.enabled = isBeforeSale();
         p.params.push(getISBN());
         replyToPopup(msg.type, p);
         return;
       }
       if (msg.type == "meta-content") {
         p.content = getFacebookThreadsPost();
-        p.enabled = 0 < ts.D.length;
+        p.enabled = isBeforeSale();
         replyToPopup(msg.type, p);
         return;
       }
       if (msg.type == "threads-content") {
         p.content = getFacebookThreadsPost();
-        p.enabled = 0 < ts.D.length;
+        p.enabled = isBeforeSale();
         replyToPopup(msg.type, p);
         return;
       }

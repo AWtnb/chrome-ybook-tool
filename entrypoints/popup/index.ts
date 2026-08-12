@@ -21,15 +21,14 @@ const requestToActiveTab = (msgType: MessageType) => {
     if (!u) {
       return;
     }
-    if (!isYBookPageUrl(u) && !isXIntentUrl(u)) {
-      return;
+    if (isYBookPageUrl(u) || isXIntentUrl(u)) {
+      const m: Message = {
+        to: "contentScript",
+        type: msgType,
+        payload: null,
+      };
+      browser.tabs.sendMessage(tab.id, m);
     }
-    const m: Message = {
-      to: "contentScript",
-      type: msgType,
-      payload: null,
-    };
-    browser.tabs.sendMessage(tab.id, m);
   });
 };
 
@@ -87,6 +86,7 @@ document
   });
 
 browser.runtime.onMessage.addListener((msg: Message) => {
+  console.log(msg);
   if (msg.to !== "popup" || !msg.payload) {
     return;
   }

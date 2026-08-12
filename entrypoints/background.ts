@@ -5,24 +5,22 @@ import {
   type Message,
   broadcast,
 } from "../utils/helper";
-
 import { browser } from "wxt/browser";
 
 export default defineBackground(() => {
   const updateConfig = (url: string) => {
-    const popupPath = isXIntentUrl(url) ? "./xtree.html" : "./popup.html";
-    const iconPath =
-      isYBookPageUrl(url) || isXIntentUrl(url)
-        ? "./icons/cremesoda_128.png"
-        : "./icons/cremesoda_128_gray.png";
-
-    browser.action.setPopup({ popup: popupPath }).then(() => {
-      browser.action.setIcon({ path: iconPath });
-    });
+    // const popupPath = isXIntentUrl(url) ? "./xtree.html" : "./popup.html";
+    // const iconPath =
+    //   isYBookPageUrl(url) || isXIntentUrl(url)
+    //     ? "./icons/cremesoda_128.png"
+    //     : "./icons/cremesoda_128_gray.png";
+    // browser.action.setPopup({ popup: popupPath }).then(() => {
+    //   browser.action.setIcon({ path: iconPath });
+    // });
   };
 
   browser.tabs.onActivated.addListener((activeInfo) => {
-    browser.tabs.get(activeInfo.tabId, (tab) => {
+    browser.tabs.get(activeInfo.tabId).then((tab) => {
       if (!tab.url) return;
       updateConfig(tab.url);
     });
@@ -33,26 +31,19 @@ export default defineBackground(() => {
     updateConfig(tab.url);
   });
 
-  const getUrlToGET = (): Promise<string> => {
-    return new Promise((resolve) => {
-      browser.storage.sync.get("gasUrl", (result) => {
-        const gasUrl = (result as { gasUrl?: string }).gasUrl;
-        resolve(gasUrl || "");
-      });
-    });
+  const getGasUrl = async (): Promise<string> => {
+    const result = await browser.storage.sync.get("gasUrl");
+    return (result as { gasUrl?: string }).gasUrl ?? "";
   };
 
-  browser.runtime.onMessage.addListener(async (msg: Message) => {
-    if (msg.to !== "background" || !msg.payload) {
-      return;
-    }
+  const handleSheetRegister = async (msg: Message) => {
     const m: Message = {
       to: "popup",
       type: "finished-sheet-register",
       payload: null,
     };
 
-    const gasUrl = await getUrlToGET();
+    const gasUrl = await getGasUrl();
     if (!gasUrl) {
       m.payload = {
         content:
@@ -66,43 +57,35 @@ export default defineBackground(() => {
 
     const url = new URL(gasUrl);
     const urlParams = new URLSearchParams();
-    urlParams.set("page", msg.payload.content);
+    urlParams.set("page", msg.payload!.content);
     ["y", "m", "d", "title", "author", "detail"].forEach((p, i) => {
       urlParams.set(p, msg.payload!.params[i]);
     });
     url.search = urlParams.toString();
 
-    // https://blog.freks.jp/gas-post-trouble-shooting/
-    fetch(url.toString(), {
-      method: "GET",
-      mode: "cors",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "ERROR: Failed to contact with Google Apps Script: " +
-              response.status,
-          );
-        }
-      })
-      .then(() => {
-        m.payload = {
-          content: "ok",
-          enabled: false,
-          params: [],
-        };
-        broadcast(m);
-      })
-      .catch((err: unknown) => {
-        const e = err instanceof Error ? err : new Error(String(err));
-        m.payload = {
-          content: e.message,
-          enabled: false,
-          params: [],
-        };
-        broadcast(m);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        mode: "cors",
       });
+      if (!response.ok) {
+        throw new Error(
+          "ERROR: Failed to contact with Google Apps Script: " +
+            response.status,
+        );
+      }
+      m.payload = { content: "ok", enabled: false, params: [] };
+    } catch (err: unknown) {
+      const e = err instanceof Error ? err : new Error(String(err));
+      m.payload = { content: e.message, enabled: false, params: [] };
+    }
 
+    broadcast(m);
+  };
+
+  browser.runtime.onMessage.addListener((msg: Message) => {
+    if (msg.to !== "background" || !msg.payload) return;
+    handleSheetRegister(msg).catch(console.error);
     return true;
   });
 });

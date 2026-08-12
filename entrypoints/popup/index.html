@@ -4,50 +4,7 @@
     <meta charset="UTF-8" />
     <title>Chrome YBook Tool</title>
     <link rel="stylesheet" href="https://unpkg.com/chota@latest" />
-    <style>
-      .app {
-        width: 450px;
-        padding: 6px;
-      }
-
-      .box {
-        padding-top: 4px;
-        padding-bottom: 12px;
-      }
-
-      .juhan {
-        display: flex;
-      }
-
-      .juhan input[type="number"] {
-        width: 100px;
-        margin-right: 8px;
-      }
-
-      pre {
-        margin: 0;
-        line-height: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        word-break: break-all;
-        max-height: 80px;
-      }
-
-      button {
-        display: block;
-      }
-
-      button.finished::after {
-        content: "\2705";
-      }
-
-      #info-copy {
-        display: flex;
-      }
-      #info-copy .box {
-        margin-right: 10px;
-      }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./style.css" />
   </head>
 
   <body>
@@ -100,5 +57,6 @@
         <button id="hasso" class="with-copy">発送依頼書内容のコピー</button>
       </div>
     </div>
+    <script type="module" src="./index.ts"></script>
   </body>
 </html>
