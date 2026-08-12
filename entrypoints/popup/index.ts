@@ -86,7 +86,6 @@ document
   });
 
 browser.runtime.onMessage.addListener((msg: Message) => {
-  console.log(msg);
   if (msg.to !== "popup" || !msg.payload) {
     return;
   }
