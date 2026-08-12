@@ -1,49 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chrome YBook Tool</title>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest" />
+    <style>
+      .app {
+        width: 450px;
+        padding: 6px;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Chrome YBook Tool</title>
-  <link rel="stylesheet" href="https://unpkg.com/chota@latest">
-  <style>
-    .app {
-      width: 450px;
-      padding: 6px;
-    }
+      button.finished::after {
+        content: "\2705";
+      }
+    </style>
+  </head>
 
-    button.finished::after {
-      content: "\2705";
-    }
-
-    .jump {
-      justify-content: space-between;
-      display: flex;
-    }
-
-    .jump input {
-      margin-right: 8px;
-    }
-
-    .jump button {
-      min-width: max-content;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="app">
-    <div class="box jump">
-      <input type="text" id="ybook-code">
-      <button id="jump-button">5桁コードでジャンプ</button>
+  <body>
+    <div class="app">
+      <div class="box">
+        <label>ツリーに投稿する書誌情報</label>
+        <button id="x-tree-content" class="with-copy">コピー</button>
+      </div>
     </div>
-    <hr>
-    <div class="box">
-      <label>ツリーに投稿する書誌情報</label>
-      <button id="x-tree-content" class="with-copy">コピー</button>
-    </div>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
-
+    <script type="module" src="../popup/index.ts"></script>
+  </body>
 </html>

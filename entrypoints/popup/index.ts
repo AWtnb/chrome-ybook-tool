@@ -115,7 +115,7 @@ browser.runtime.onMessage.addListener((msg: Message) => {
   if (msg.type === "x-post-content") {
     const intent = `https://x.com/intent/post?text=${encodeURIComponent(
       payload.content,
-    )}&isbn=${payload.params[0]}`;
+    )}&bid=${payload.params[0]}`;
     const button = setupButton(msg.type, payload);
     button?.addEventListener("click", () => {
       window.open(intent, "_blank");

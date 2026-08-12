@@ -41,6 +41,15 @@ export default defineContentScript({
       return `『${getBookTitle()}』（${getAuthorsLine()}）`;
     };
 
+    const getBookPageId = (): string => {
+      const u = new URL(document.location.href);
+      const leaf = u.pathname.split("/").pop();
+      if (leaf) {
+        return leaf.split(".")[0];
+      }
+      return "";
+    };
+
     const getMainTweet = (): string => {
       const tagsLine = [
         "有斐閣",
@@ -169,9 +178,9 @@ export default defineContentScript({
 
       if (isXIntentPage() && msg.type == "x-tree-content") {
         const u = new URL(document.location.href);
-        const isbn = u.searchParams.get("isbn");
-        if (isbn) {
-          p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/books/detail/${isbn}`;
+        const bid = u.searchParams.get("bid");
+        if (bid) {
+          p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/book/${bid}.html`;
           p.enabled = true;
           replyToPopup(msg.type, p);
         }
@@ -198,7 +207,7 @@ export default defineContentScript({
       if (msg.type == "x-post-content") {
         p.content = getMainTweet();
         p.enabled = isBeforeSale();
-        p.params.push(getISBN());
+        p.params.push(getBookPageId());
         replyToPopup(msg.type, p);
         return;
       }
