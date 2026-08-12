@@ -1,0 +1,196 @@
+"use strict";
+
+import { browser } from "wxt/browser";
+import {
+  Payload,
+  Message,
+  MessageType,
+  broadcast,
+  isYBookPageUrl,
+  isXIntentUrl,
+} from "../../utils/helper";
+import { FILLER } from "../../utils/pageParser";
+
+const requestToActiveTab = (msgType: MessageType) => {
+  browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab.id) {
+      return;
+    }
+    const u = tab.url;
+    if (!u) {
+      return;
+    }
+    if (!isYBookPageUrl(u) && !isXIntentUrl(u)) {
+      return;
+    }
+    const m: Message = {
+      to: "contentScript",
+      type: msgType,
+      payload: null,
+    };
+    browser.tabs.sendMessage(tab.id, m);
+  });
+};
+
+requestToActiveTab("sheet-register");
+requestToActiveTab("x-post-content");
+requestToActiveTab("x-tree-content");
+requestToActiveTab("x-juhan-content");
+requestToActiveTab("meta-content");
+requestToActiveTab("threads-content");
+requestToActiveTab("genpon");
+requestToActiveTab("hasso");
+requestToActiveTab("general-info");
+requestToActiveTab("minimal-info");
+
+const insertPreview = (msgType: MessageType, payload: Payload) => {
+  const elem = document.getElementById(msgType);
+  const pre = document.createElement("pre");
+  pre.classList.add("preview");
+  const c = document.createElement("code");
+  c.innerText = payload.content;
+  pre.appendChild(c);
+  elem?.insertAdjacentElement("beforebegin", pre);
+};
+
+const clearCopyStatus = () => {
+  Array.from(
+    document.querySelectorAll<HTMLElement>("button.with-copy"),
+  ).forEach((elem) => {
+    elem.classList.remove("finished");
+  });
+};
+
+type copyFinishedCallback = () => void;
+
+const copyText = (text: string, callback: copyFinishedCallback) => {
+  clearCopyStatus();
+  navigator.clipboard.writeText(text).then(callback, () => {
+    console.log("failed to copy:", text);
+  });
+};
+
+const setupButton = (msgType: MessageType, payload: Payload): HTMLElement => {
+  const b = document.getElementById(msgType)!;
+  if (payload.enabled) {
+    b.removeAttribute("disabled");
+  }
+  return b;
+};
+
+document
+  .getElementById("juhan-count")
+  ?.addEventListener("change", (event: Event) => {
+    const v = (event.target as HTMLInputElement).value;
+    document.getElementById("x-juhan-content")!.setAttribute("juhan-count", v);
+  });
+
+browser.runtime.onMessage.addListener((msg: Message) => {
+  if (msg.to !== "popup" || !msg.payload) {
+    return;
+  }
+  const payload: Payload = msg.payload;
+
+  if (msg.type === "sheet-register") {
+    const button = setupButton(msg.type, payload);
+    button.classList.remove("finished");
+    button.addEventListener("click", () => {
+      button.setAttribute("disabled", "true");
+      broadcast({ to: "background", type: msg.type, payload: payload });
+    });
+    return;
+  }
+
+  if (msg.type === "finished-sheet-register") {
+    const button = document.getElementById("sheet-register")!;
+    if (payload.content == "ok") {
+      button.classList.add("finished");
+    } else {
+      button.removeAttribute("disabled");
+      alert(payload.content);
+    }
+    return;
+  }
+
+  if (msg.type === "x-post-content") {
+    const intent = `https://x.com/intent/post?text=${encodeURIComponent(
+      payload.content,
+    )}&isbn=${payload.params[0]}`;
+    const button = setupButton(msg.type, payload);
+    button?.addEventListener("click", () => {
+      window.open(intent, "_blank");
+    });
+    insertPreview(msg.type, payload);
+    return;
+  }
+
+  if (msg.type === "x-tree-content") {
+    const button = setupButton(msg.type, payload);
+    button?.addEventListener("click", () => {
+      copyText(payload.content, () => {
+        button?.classList.add("finished");
+      });
+    });
+    insertPreview(msg.type, payload);
+    return;
+  }
+
+  if (msg.type === "meta-content") {
+    const button = setupButton(msg.type, payload);
+    button?.addEventListener("click", () => {
+      copyText(payload.content, () => {
+        const url =
+          "https://business.facebook.com/latest/composer?ref=biz_web_content_manager_published_posts&asset_id=101509805373062&context_ref=POSTS&business_id=114292853233117";
+        window.open(url, "_blank");
+      });
+    });
+    insertPreview(msg.type, payload);
+    return;
+  }
+
+  if (msg.type === "threads-content") {
+    const button = setupButton(msg.type, payload);
+    button?.addEventListener("click", () => {
+      copyText(payload.content, () => {
+        const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
+          payload.content,
+        )}`;
+        window.open(url, "_blank");
+      });
+    });
+    return;
+  }
+
+  if (msg.type === "x-juhan-content") {
+    const button = setupButton(msg.type, payload);
+    button?.setAttribute("content", payload.content);
+    if (payload.enabled) {
+      document.getElementById("juhan-count")!.removeAttribute("disabled");
+    }
+    button?.addEventListener("click", () => {
+      const content = button?.getAttribute("content") || "";
+      const count = String(button?.getAttribute("juhan-count") || 2);
+      const intent = `https://x.com/intent/post?text=${encodeURIComponent(
+        content.replace(FILLER, count),
+      )}`;
+      window.open(intent, "_blank");
+    });
+    return;
+  }
+
+  if (
+    msg.type === "genpon" ||
+    msg.type === "hasso" ||
+    msg.type === "general-info" ||
+    msg.type === "minimal-info"
+  ) {
+    const button = setupButton(msg.type, payload);
+    button?.addEventListener("click", () => {
+      copyText(payload.content, () => {
+        button?.classList.add("finished");
+      });
+    });
+    return;
+  }
+});
