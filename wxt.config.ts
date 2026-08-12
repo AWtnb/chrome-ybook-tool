@@ -4,7 +4,7 @@ export default defineConfig({
   manifest: {
     name: "Chrome Ybook Tool",
     version: "0.5.2",
-    description: "Get book information from page",
+    description: "書籍詳細ページから情報を抽出する",
     permissions: ["activeTab", "tabs", "clipboardWrite", "storage"],
     commands: {
       _execute_action: {

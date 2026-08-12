@@ -9,14 +9,14 @@ import { browser } from "wxt/browser";
 
 export default defineBackground(() => {
   const updateConfig = (url: string) => {
-    // const popupPath = isXIntentUrl(url) ? "./xtree.html" : "./popup.html";
-    // const iconPath =
-    //   isYBookPageUrl(url) || isXIntentUrl(url)
-    //     ? "./icons/cremesoda_128.png"
-    //     : "./icons/cremesoda_128_gray.png";
-    // browser.action.setPopup({ popup: popupPath }).then(() => {
-    //   browser.action.setIcon({ path: iconPath });
-    // });
+    const popupPath = isXIntentUrl(url) ? "./xtree.html" : "./popup.html";
+    const iconPath =
+      isYBookPageUrl(url) || isXIntentUrl(url)
+        ? "./icon-128.png"
+        : "./icon-128_gray.png";
+    browser.action.setPopup({ popup: popupPath }).then(() => {
+      browser.action.setIcon({ path: iconPath });
+    });
   };
 
   browser.tabs.onActivated.addListener((activeInfo) => {
