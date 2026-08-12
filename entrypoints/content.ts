@@ -133,8 +133,13 @@ export default defineContentScript({
 
     const getContentDetail = (): string => {
       return (
-        (document.getElementById("cont_box_m30")?.textContent || "").trim() ||
-        ""
+        (
+          document
+            .querySelector(
+              "#page > div.contents-block div.book-content > div.wrap",
+            )
+            ?.textContent.trim() || ""
+        ).trim() || ""
       );
     };
 
@@ -143,8 +148,11 @@ export default defineContentScript({
         `${getBookSeries()} ${getBookMinimalInfo()}`.trim(),
         "",
         document
-          .getElementById("cont_box_m30")
-          ?.innerText.replace(/\uff0c/g, "、") || "",
+          .querySelector(
+            "#page > div.contents-block div.book-content > div.wrap",
+          )
+          ?.textContent.trim()
+          .replace(/\uff0c/g, "、") || "",
         "",
         document.location,
       ].join("\n");
