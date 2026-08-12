@@ -167,7 +167,7 @@ export default defineContentScript({
     };
 
     browser.runtime.onMessage.addListener((msg: Message) => {
-      if (msg.to !== "contentScript") {
+      if (msg.to !== "content") {
         return;
       }
       const p: Payload = {

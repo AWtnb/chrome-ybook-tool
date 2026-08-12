@@ -21,7 +21,7 @@ export type Payload = {
 };
 
 export type Message = {
-  to: "popup" | "contentScript" | "background";
+  to: "popup" | "content" | "background";
   type: MessageType;
   payload: Payload | null;
 };

@@ -23,7 +23,7 @@ const requestToActiveTab = (msgType: MessageType) => {
     }
     if (isYBookPageUrl(u) || isXIntentUrl(u)) {
       const m: Message = {
-        to: "contentScript",
+        to: "content",
         type: msgType,
         payload: null,
       };
