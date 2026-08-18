@@ -69,11 +69,7 @@ talkWithActiveTab(
     button.classList.remove("finished");
     button.addEventListener("click", async () => {
       button.setAttribute("disabled", "true");
-      const result: Payload = await sendMessage(
-        msgType,
-        {},
-        { context: "background", tabId: tabId },
-      );
+      const result: Payload = await sendMessage(msgType, p, "background");
       if (result.content === "ok") {
         button!.classList.add("finished");
       } else {

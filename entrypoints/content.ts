@@ -162,11 +162,11 @@ export default defineContentScript({
       ].join(" ");
     };
 
-    onMessage(MESSAGE_TYPES.X_TREE_CONTENT, () => {
-      if (!isXIntentPage()) return;
+    onMessage(MESSAGE_TYPES.X_TREE_CONTENT, (): Payload | null => {
+      if (!isXIntentPage()) return null;
       const u = new URL(document.location.href);
       const bid = u.searchParams.get("bid");
-      if (!bid) return;
+      if (!bid) return null;
       return {
         content: `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/book/${bid}.html`,
         enabled: true,
