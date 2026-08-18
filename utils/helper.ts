@@ -1,33 +1,24 @@
-import { browser } from "wxt/browser";
+export const MESSAGE_TYPES = {
+  SHEET_REGISTER: "sheet-register",
+  X_POST_CONTENT: "x-post-content",
+  X_TREE_CONTENT: "x-tree-content",
+  X_JUHAN_CONTENT: "x-juhan-content",
+  META_CONTENT: "meta-content",
+  THREADS_CONTENT: "threads-content",
+  GENPON: "genpon",
+  HASSO: "hasso",
+  GENERAL_INFO: "general-info",
+  MINIMAL_INFO: "minimal-info",
+} as const;
 
 export type MessageType =
-  | "sheet-register"
-  | "finished-sheet-register"
-  | "x-post-content"
-  | "x-tree-content"
-  | "x-juhan-content"
-  | "meta-content"
-  | "threads-content"
-  | "genpon"
-  | "hasso"
-  | "general-info"
-  | "minimal-info"
+  | (typeof MESSAGE_TYPES)[keyof typeof MESSAGE_TYPES]
   | "";
 
 export type Payload = {
   content: string;
   enabled: boolean;
   params: string[];
-};
-
-export type Message = {
-  to: "popup" | "content" | "background";
-  type: MessageType;
-  payload: Payload | null;
-};
-
-export const broadcast = (m: Message) => {
-  browser.runtime.sendMessage(m);
 };
 
 export const isYBookPageUrl = (url: string): boolean => {

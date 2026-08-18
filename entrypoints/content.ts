@@ -1,10 +1,11 @@
+import { onMessage } from "webext-bridge/content-script";
 import { defineContentScript } from "wxt/utils/define-content-script";
 
 import {
-  broadcast,
   isXIntentUrl,
   isYBookPageUrl,
-  MessageType,
+  MESSAGE_TYPES,
+  Payload,
 } from "../utils/helper";
 import {
   FILLER,
@@ -18,12 +19,8 @@ import {
   getGenres,
   getPrice,
   getTimeStamp,
-  getISBN,
   isBeforeSale,
 } from "../utils/pageParser";
-
-import { Payload, Message } from "../utils/helper";
-import { browser } from "wxt/browser";
 
 export default defineContentScript({
   matches: ["https://www.yuhikaku.co.jp/book/b*", "https://x.com/intent/*"],
@@ -77,7 +74,7 @@ export default defineContentScript({
       ].join("\n");
     };
 
-    const getFacebookThreadsPost = () => {
+    const getFacebookInstagramThreadsPost = () => {
       const ts = getTimeStamp();
       const pubdateLine = ` ${ts.M}月${ts.D}日発売予定！`;
       const tags = [
@@ -165,102 +162,99 @@ export default defineContentScript({
       ].join(" ");
     };
 
-    const replyToPopup = (replyType: MessageType, payload: Payload) => {
-      const m: Message = {
-        to: "popup",
-        type: replyType,
-        payload: payload,
-      };
-      broadcast(m);
-    };
-
-    browser.runtime.onMessage.addListener((msg: Message) => {
-      if (msg.to !== "content") {
-        return;
-      }
-      const p: Payload = {
-        content: "",
-        enabled: false,
+    onMessage(MESSAGE_TYPES.X_TREE_CONTENT, () => {
+      if (!isXIntentPage()) return;
+      const u = new URL(document.location.href);
+      const bid = u.searchParams.get("bid");
+      if (!bid) return;
+      return {
+        content: `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/book/${bid}.html`,
+        enabled: true,
         params: [],
       };
+    });
 
-      if (isXIntentPage() && msg.type == "x-tree-content") {
-        const u = new URL(document.location.href);
-        const bid = u.searchParams.get("bid");
-        if (bid) {
-          p.content = `書誌情報はこちら：\nhttps://www.yuhikaku.co.jp/book/${bid}.html`;
-          p.enabled = true;
-          replyToPopup(msg.type, p);
-        }
-        return;
-      }
-
-      if (!isYBookPage()) {
-        return;
-      }
-
+    onMessage(MESSAGE_TYPES.SHEET_REGISTER, () => {
+      if (!isYBookPage()) return null;
       const ts = getTimeStamp();
-      if (msg.type == "sheet-register") {
-        p.content = document.location.href;
-        p.enabled = isBeforeSale();
-        p.params.push(ts.Y);
-        p.params.push(ts.M);
-        p.params.push(ts.D);
-        p.params.push(getBookTitle());
-        p.params.push(getAuthorsLine());
-        p.params.push(getContentDetail());
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "x-post-content") {
-        p.content = getMainTweet();
-        p.enabled = isBeforeSale();
-        p.params.push(getBookPageId());
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "meta-content") {
-        p.content = getFacebookThreadsPost();
-        p.enabled = isBeforeSale();
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "threads-content") {
-        p.content = getFacebookThreadsPost();
-        p.enabled = isBeforeSale();
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "x-juhan-content") {
-        p.content = getJuhanTweet();
-        p.enabled = ts.D.length < 1;
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "genpon") {
-        p.content = getGenponRecordLine();
-        p.enabled = true;
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "hasso") {
-        p.content = getHassoIraishoLine();
-        p.enabled = true;
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "general-info") {
-        p.content = getGeneralInfoToShare();
-        p.enabled = true;
-        replyToPopup(msg.type, p);
-        return;
-      }
-      if (msg.type == "minimal-info") {
-        p.content = getMinimalInfoToShare();
-        p.enabled = true;
-        replyToPopup(msg.type, p);
-        return;
-      }
+      const params: string[] = [
+        ts.Y,
+        ts.M,
+        ts.D,
+        getBookTitle(),
+        getAuthorsLine(),
+        getContentDetail(),
+      ];
+      return {
+        content: document.location.href,
+        enabled: isBeforeSale(),
+        params: params,
+      };
+    });
+
+    onMessage(MESSAGE_TYPES.X_POST_CONTENT, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getMainTweet(),
+        enabled: isBeforeSale(),
+        params: [getBookPageId()],
+      };
+    });
+    onMessage(MESSAGE_TYPES.META_CONTENT, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getFacebookInstagramThreadsPost(),
+        enabled: isBeforeSale(),
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.THREADS_CONTENT, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getFacebookInstagramThreadsPost(),
+        enabled: isBeforeSale(),
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.X_JUHAN_CONTENT, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getJuhanTweet(),
+        enabled: !isBeforeSale(),
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.GENPON, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getGenponRecordLine(),
+        enabled: true,
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.HASSO, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getHassoIraishoLine(),
+        enabled: true,
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.GENERAL_INFO, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getGeneralInfoToShare(),
+        enabled: true,
+        params: [],
+      };
+    });
+    onMessage(MESSAGE_TYPES.MINIMAL_INFO, (): Payload | null => {
+      if (!isYBookPage()) return null;
+      return {
+        content: getMinimalInfoToShare(),
+        enabled: true,
+        params: [],
+      };
     });
   },
 });

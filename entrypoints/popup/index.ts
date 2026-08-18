@@ -2,48 +2,34 @@
 
 import { browser } from "wxt/browser";
 import {
-  Payload,
-  Message,
-  MessageType,
-  broadcast,
   isYBookPageUrl,
   isXIntentUrl,
+  Payload,
+  MESSAGE_TYPES,
 } from "../../utils/helper";
 import { FILLER } from "../../utils/pageParser";
+import { sendMessage } from "webext-bridge/popup";
 
-const requestToActiveTab = (msgType: MessageType) => {
-  browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const tab = tabs[0];
-    if (!tab.id) {
-      return;
-    }
-    const u = tab.url;
-    if (!u) {
-      return;
-    }
-    if (isYBookPageUrl(u) || isXIntentUrl(u)) {
-      const m: Message = {
-        to: "content",
-        type: msgType,
-        payload: null,
-      };
-      browser.tabs.sendMessage(tab.id, m);
-    }
-  });
+const talkWithActiveTab = async (
+  msgType: string,
+  callback: (messageType: string, payload: Payload, tabId: number) => void,
+) => {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (!tab.id) return;
+  const u = tab.url;
+  if (!u || !(isYBookPageUrl(u) || isXIntentUrl(u))) return;
+
+  const responce: Payload | null = await sendMessage(
+    msgType,
+    {},
+    { context: "content-script", tabId: tab.id },
+  );
+  if (responce !== null) {
+    callback(msgType, responce, tab.id);
+  }
 };
 
-requestToActiveTab("sheet-register");
-requestToActiveTab("x-post-content");
-requestToActiveTab("x-tree-content");
-requestToActiveTab("x-juhan-content");
-requestToActiveTab("meta-content");
-requestToActiveTab("threads-content");
-requestToActiveTab("genpon");
-requestToActiveTab("hasso");
-requestToActiveTab("general-info");
-requestToActiveTab("minimal-info");
-
-const insertPreview = (msgType: MessageType, payload: Payload) => {
+const insertPreview = (msgType: string, payload: Payload) => {
   const elem = document.getElementById(msgType);
   const pre = document.createElement("pre");
   pre.classList.add("preview");
@@ -61,16 +47,14 @@ const clearCopyStatus = () => {
   });
 };
 
-type copyFinishedCallback = () => void;
-
-const copyText = (text: string, callback: copyFinishedCallback) => {
+const copyText = (text: string, callback: () => void) => {
   clearCopyStatus();
   navigator.clipboard.writeText(text).then(callback, () => {
     console.log("failed to copy:", text);
   });
 };
 
-const setupButton = (msgType: MessageType, payload: Payload): HTMLElement => {
+const setupButton = (msgType: string, payload: Payload): HTMLElement => {
   const b = document.getElementById(msgType)!;
   if (payload.enabled) {
     b.removeAttribute("disabled");
@@ -78,93 +62,61 @@ const setupButton = (msgType: MessageType, payload: Payload): HTMLElement => {
   return b;
 };
 
-document
-  .getElementById("juhan-count")
-  ?.addEventListener("change", (event: Event) => {
-    const v = (event.target as HTMLInputElement).value;
-    document.getElementById("x-juhan-content")!.setAttribute("juhan-count", v);
-  });
-
-browser.runtime.onMessage.addListener((msg: Message) => {
-  if (msg.to !== "popup" || !msg.payload) {
-    return;
-  }
-  const payload: Payload = msg.payload;
-
-  if (msg.type === "sheet-register") {
-    const button = setupButton(msg.type, payload);
+talkWithActiveTab(
+  MESSAGE_TYPES.SHEET_REGISTER,
+  (msgType: string, p: Payload, tabId: number) => {
+    const button = setupButton(msgType, p);
     button.classList.remove("finished");
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       button.setAttribute("disabled", "true");
-      broadcast({ to: "background", type: msg.type, payload: payload });
+      const result: Payload = await sendMessage(
+        msgType,
+        {},
+        { context: "background", tabId: tabId },
+      );
+      if (result.content === "ok") {
+        button!.classList.add("finished");
+      } else {
+        button!.removeAttribute("disabled");
+        alert(result.content);
+      }
     });
-    return;
-  }
+  },
+);
 
-  if (msg.type === "finished-sheet-register") {
-    const button = document.getElementById("sheet-register")!;
-    if (payload.content == "ok") {
-      button.classList.add("finished");
-    } else {
-      button.removeAttribute("disabled");
-      alert(payload.content);
-    }
-    return;
-  }
-
-  if (msg.type === "x-post-content") {
+talkWithActiveTab(
+  MESSAGE_TYPES.X_POST_CONTENT,
+  (msgType: string, p: Payload, _tabId: number) => {
     const intent = `https://x.com/intent/post?text=${encodeURIComponent(
-      payload.content,
-    )}&bid=${payload.params[0]}`;
-    const button = setupButton(msg.type, payload);
+      p.content,
+    )}&bid=${p.params[0]}`;
+    const button = setupButton(msgType, p);
     button?.addEventListener("click", () => {
       window.open(intent, "_blank");
     });
-    insertPreview(msg.type, payload);
-    return;
-  }
+    insertPreview(msgType, p);
+  },
+);
 
-  if (msg.type === "x-tree-content") {
-    const button = setupButton(msg.type, payload);
+talkWithActiveTab(
+  MESSAGE_TYPES.X_TREE_CONTENT,
+  (msgType: string, p: Payload, _tabId: number) => {
+    const button = setupButton(msgType, p);
     button?.addEventListener("click", () => {
-      copyText(payload.content, () => {
+      copyText(p.content, () => {
         button?.classList.add("finished");
       });
     });
-    insertPreview(msg.type, payload);
-    return;
-  }
+    insertPreview(msgType, p);
+  },
+);
 
-  if (msg.type === "meta-content") {
-    const button = setupButton(msg.type, payload);
-    button?.addEventListener("click", () => {
-      copyText(payload.content, () => {
-        const url =
-          "https://business.facebook.com/latest/composer?ref=biz_web_content_manager_published_posts&asset_id=101509805373062&context_ref=POSTS&business_id=114292853233117";
-        window.open(url, "_blank");
-      });
-    });
-    insertPreview(msg.type, payload);
-    return;
-  }
-
-  if (msg.type === "threads-content") {
-    const button = setupButton(msg.type, payload);
-    button?.addEventListener("click", () => {
-      copyText(payload.content, () => {
-        const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
-          payload.content,
-        )}`;
-        window.open(url, "_blank");
-      });
-    });
-    return;
-  }
-
-  if (msg.type === "x-juhan-content") {
-    const button = setupButton(msg.type, payload);
-    button?.setAttribute("content", payload.content);
-    if (payload.enabled) {
+talkWithActiveTab(
+  MESSAGE_TYPES.X_JUHAN_CONTENT,
+  (msgType: string, p: Payload, _tabId: number) => {
+    const button = setupButton(msgType, p);
+    button?.setAttribute("content", p.content);
+    if (p.enabled) {
       document.getElementById("juhan-count")!.removeAttribute("disabled");
     }
     button?.addEventListener("click", () => {
@@ -175,21 +127,58 @@ browser.runtime.onMessage.addListener((msg: Message) => {
       )}`;
       window.open(intent, "_blank");
     });
-    return;
-  }
+  },
+);
 
-  if (
-    msg.type === "genpon" ||
-    msg.type === "hasso" ||
-    msg.type === "general-info" ||
-    msg.type === "minimal-info"
-  ) {
-    const button = setupButton(msg.type, payload);
+talkWithActiveTab(
+  MESSAGE_TYPES.META_CONTENT,
+  (msgType: string, p: Payload, _tabId: number) => {
+    const button = setupButton(msgType, p);
     button?.addEventListener("click", () => {
-      copyText(payload.content, () => {
-        button?.classList.add("finished");
+      copyText(p.content, () => {
+        const url =
+          "https://business.facebook.com/latest/composer?ref=biz_web_content_manager_published_posts&asset_id=101509805373062&context_ref=POSTS&business_id=114292853233117";
+        window.open(url, "_blank");
       });
     });
-    return;
-  }
-});
+    insertPreview(msgType, p);
+  },
+);
+
+talkWithActiveTab(
+  MESSAGE_TYPES.THREADS_CONTENT,
+  (msgType: string, p: Payload, _tabId: number) => {
+    const button = setupButton(msgType, p);
+    button?.addEventListener("click", () => {
+      copyText(p.content, () => {
+        const url = `https://www.threads.net/intent/post?text=${encodeURIComponent(
+          p.content,
+        )}`;
+        window.open(url, "_blank");
+      });
+    });
+  },
+);
+
+const setupCopyButton = (msgType: string, p: Payload, _tabId: number) => {
+  const button = setupButton(msgType, p);
+  button?.addEventListener("click", () => {
+    copyText(p.content, () => {
+      button?.classList.add("finished");
+    });
+  });
+};
+
+talkWithActiveTab(MESSAGE_TYPES.GENPON, setupCopyButton);
+talkWithActiveTab(MESSAGE_TYPES.HASSO, setupCopyButton);
+talkWithActiveTab(MESSAGE_TYPES.GENERAL_INFO, setupCopyButton);
+talkWithActiveTab(MESSAGE_TYPES.MINIMAL_INFO, setupCopyButton);
+
+document
+  .getElementById("juhan-count")
+  ?.addEventListener("change", (event: Event) => {
+    const v = (event.target as HTMLInputElement).value;
+    document
+      .getElementById(MESSAGE_TYPES.X_JUHAN_CONTENT)!
+      .setAttribute("juhan-count", v);
+  });

@@ -25,5 +25,8 @@
   "type": "module",
   "devDependencies": {
     "wxt": "^0.21.3"
+  },
+  "dependencies": {
+    "webext-bridge": "^6.0.1"
   }
 }

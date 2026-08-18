@@ -1,9 +1,10 @@
+import { onMessage } from "webext-bridge/background";
 import { defineBackground } from "wxt/utils/define-background";
 import {
   isYBookPageUrl,
   isXIntentUrl,
-  type Message,
-  broadcast,
+  Payload,
+  MESSAGE_TYPES,
 } from "../utils/helper";
 import { browser } from "wxt/browser";
 
@@ -36,56 +37,42 @@ export default defineBackground(() => {
     return (result as { gasUrl?: string }).gasUrl ?? "";
   };
 
-  const handleSheetRegister = async (msg: Message) => {
-    const m: Message = {
-      to: "popup",
-      type: "finished-sheet-register",
-      payload: null,
-    };
-
-    const gasUrl = await getGasUrl();
-    if (!gasUrl) {
-      m.payload = {
-        content:
-          "エラー！ Googleスプレッドシートに記録するためのURLが未設定です。アイコンを右クリックして「オプション」から設定してください。",
-        enabled: false,
-        params: [],
-      };
-      broadcast(m);
-      return;
-    }
-
-    const url = new URL(gasUrl);
-    const urlParams = new URLSearchParams();
-    urlParams.set("page", msg.payload!.content);
-    ["y", "m", "d", "title", "author", "detail"].forEach((p, i) => {
-      urlParams.set(p, msg.payload!.params[i]);
-    });
-    url.search = urlParams.toString();
-
-    try {
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        mode: "cors",
-      });
-      if (!response.ok) {
-        throw new Error(
-          "ERROR: Failed to contact with Google Apps Script: " +
-            response.status,
-        );
+  onMessage<Payload>(
+    MESSAGE_TYPES.SHEET_REGISTER,
+    async ({ data }): Promise<Payload> => {
+      const gasUrl = await getGasUrl();
+      if (!gasUrl) {
+        return {
+          content:
+            "エラー！ Googleスプレッドシートに記録するためのURLが未設定です。アイコンを右クリックして「オプション」から設定してください。",
+          enabled: false,
+          params: [],
+        };
       }
-      m.payload = { content: "ok", enabled: false, params: [] };
-    } catch (err: unknown) {
-      const e = err instanceof Error ? err : new Error(String(err));
-      m.payload = { content: e.message, enabled: false, params: [] };
-    }
+      const url = new URL(gasUrl);
+      const urlParams = new URLSearchParams();
+      urlParams.set("page", data.content);
+      ["y", "m", "d", "title", "author", "detail"].forEach((p, i) => {
+        urlParams.set(p, data.params[i]);
+      });
+      url.search = urlParams.toString();
 
-    broadcast(m);
-  };
-
-  browser.runtime.onMessage.addListener((msg: Message) => {
-    if (msg.to !== "background" || !msg.payload) return;
-    handleSheetRegister(msg).catch(console.error);
-    return true;
-  });
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          mode: "cors",
+        });
+        if (!response.ok) {
+          throw new Error(
+            "ERROR: Failed to contact with Google Apps Script: " +
+              response.status,
+          );
+        }
+        return { content: "ok", enabled: false, params: [] };
+      } catch (err: unknown) {
+        const e = err instanceof Error ? err : new Error(String(err));
+        return { content: e.message, enabled: false, params: [] };
+      }
+    },
+  );
 });
