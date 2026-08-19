@@ -10,7 +10,8 @@
     "build:firefox": "wxt build -b firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "release": "tsx scripts/release.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,8 @@
   },
   "type": "module",
   "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
     "wxt": "^0.21.3"
   },
   "dependencies": {

@@ -3,7 +3,6 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   manifest: {
     name: "Chrome Ybook Tool",
-    version: "0.5.2",
     description: "書籍詳細ページから情報を抽出する",
     permissions: ["activeTab", "tabs", "clipboardWrite", "storage"],
     commands: {
