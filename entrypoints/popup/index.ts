@@ -4,9 +4,9 @@ import { browser } from "wxt/browser";
 import {
   isYBookPageUrl,
   isXIntentUrl,
-  Payload,
   MESSAGE_TYPES,
 } from "../../utils/helper";
+import type { Payload } from "../../utils/helper";
 import { FILLER } from "../../utils/pageParser";
 import { sendMessage } from "webext-bridge/popup";
 
@@ -15,7 +15,7 @@ const talkWithActiveTab = async (
   callback: (messageType: string, payload: Payload, tabId: number) => void,
 ) => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab.id) return;
+  if (!tab || !tab.id) return;
   const u = tab.url;
   if (!u || !(isYBookPageUrl(u) || isXIntentUrl(u))) return;
 

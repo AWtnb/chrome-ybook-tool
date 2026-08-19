@@ -1,12 +1,8 @@
 import { onMessage } from "webext-bridge/content-script";
 import { defineContentScript } from "wxt/utils/define-content-script";
 
-import {
-  isXIntentUrl,
-  isYBookPageUrl,
-  MESSAGE_TYPES,
-  Payload,
-} from "../utils/helper";
+import { isXIntentUrl, isYBookPageUrl, MESSAGE_TYPES } from "../utils/helper";
+import type { Payload } from "../utils/helper";
 import {
   FILLER,
   getAuthors,
@@ -42,7 +38,7 @@ export default defineContentScript({
       const u = new URL(document.location.href);
       const leaf = u.pathname.split("/").pop();
       if (leaf) {
-        return leaf.split(".")[0];
+        return leaf.split(".")[0] ?? "";
       }
       return "";
     };

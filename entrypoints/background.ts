@@ -1,11 +1,7 @@
 import { onMessage } from "webext-bridge/background";
 import { defineBackground } from "wxt/utils/define-background";
-import {
-  isYBookPageUrl,
-  isXIntentUrl,
-  Payload,
-  MESSAGE_TYPES,
-} from "../utils/helper";
+import { isYBookPageUrl, isXIntentUrl, MESSAGE_TYPES } from "../utils/helper";
+import type { Payload } from "../utils/helper";
 import { browser } from "wxt/browser";
 
 export default defineBackground(() => {
@@ -53,7 +49,7 @@ export default defineBackground(() => {
       const urlParams = new URLSearchParams();
       urlParams.set("page", data.content);
       ["y", "m", "d", "title", "author", "detail"].forEach((p, i) => {
-        urlParams.set(p, data.params[i]);
+        urlParams.set(p, data.params[i] ?? "");
       });
       url.search = urlParams.toString();
 
